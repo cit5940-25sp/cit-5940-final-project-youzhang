@@ -4,6 +4,7 @@ import factories.ServiceFactory;
 import services.MovieService;
 import utils.DataLoader;
 import models.Movie;
+import models.Autocomplete;
 
 public class MovieIndexer {
     private Autocomplete autocomplete;
