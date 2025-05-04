@@ -31,8 +31,11 @@ public class GameController implements HttpHandler {
         this.gameService = ServiceFactory.getGameService();
         this.movieService = ServiceFactory.getMovieService();
         this.autocomplete = new Autocomplete();
+        
         // Initialize autocomplete with all movies
-        for (Movie movie : movieService.getAllMovies()) {
+        List<Movie> allMovies = movieService.getAllMovies();
+        System.out.println("Initializing autocomplete with " + allMovies.size() + " movies");
+        for (Movie movie : allMovies) {
             autocomplete.insert(movie);
         }
     }
@@ -258,8 +261,12 @@ public class GameController implements HttpHandler {
         String searchTerm = params.getOrDefault("term", "");
         int limit = Integer.parseInt(params.getOrDefault("limit", "10"));
         
+        System.out.println("Searching movies with term: " + searchTerm + ", limit: " + limit);
+        
         // Use autocomplete to search movies
         List<Movie> movies = autocomplete.search(searchTerm, limit);
+        
+        System.out.println("Found " + movies.size() + " movies matching '" + searchTerm + "'");
         
         // Build response data
         List<Map<String, Object>> moviesData = new ArrayList<>();

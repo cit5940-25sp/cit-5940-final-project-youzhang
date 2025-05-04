@@ -22,13 +22,20 @@ public class Autocomplete {
     }
 
     private TrieNode root;
+    private int totalMovies;
 
     public Autocomplete() {
         root = new TrieNode();
+        totalMovies = 0;
     }
 
     // 插入电影到 Trie
     public void insert(Movie movie) {
+        if (movie == null || movie.getTitle() == null) {
+            System.out.println("Warning: Attempted to insert null movie or movie with null title");
+            return;
+        }
+
         TrieNode current = root;
         String lowerTitle = movie.getTitle().toLowerCase();
         
@@ -43,6 +50,7 @@ public class Autocomplete {
         
         current.isEndOfWord = true;
         current.movie = movie;
+        totalMovies++;
     }
 
     // 根据前缀搜索匹配的电影
@@ -53,25 +61,49 @@ public class Autocomplete {
     // 根据前缀搜索匹配的电影，限制返回数量
     public List<Movie> search(String prefix, int limit) {
         List<Movie> results = new ArrayList<>();
-        TrieNode current = root;
-        String lowerPrefix = prefix.toLowerCase();
+        
+        if (prefix == null) {
+            System.out.println("Warning: Search prefix is null");
+            return results;
+        }
 
-        // 先找到前缀的最后一个节点
+        System.out.println("Searching with prefix: '" + prefix + "', limit: " + limit + " (total movies in trie: " + totalMovies + ")");
+        
+        TrieNode current = root;
+        String lowerPrefix = prefix.toLowerCase().trim();
+
+        // Handle empty prefix - return first N movies
+        if (lowerPrefix.isEmpty()) {
+            System.out.println("Empty prefix - collecting all movies up to limit");
+            collectMovies(root, results);
+            results.sort(new MovieComparator(lowerPrefix));
+            List<Movie> limitedResults = results.subList(0, Math.min(limit, results.size()));
+            System.out.println("Returning " + limitedResults.size() + " results for empty prefix");
+            return limitedResults;
+        }
+
+        // Navigate to prefix node
         for (int i = 0; i < lowerPrefix.length(); i++) {
             char c = lowerPrefix.charAt(i);
             
             if (!current.children.containsKey(c)) {
-                return results; // 如果没有找到前缀，返回空列表
+                System.out.println("No movies found with prefix '" + prefix + "' (stopped at character '" + c + "')");
+                return results;
             }
             current = current.children.get(c);
         }
 
-        // 从该节点开始，收集所有可能的电影
+        // Collect all movies under this prefix
         collectMovies(current, results);
-
-        // 按匹配度排序并限制返回数量
-        results.sort(new MovieComparator(prefix));
-        return results.subList(0, Math.min(limit, results.size()));
+        
+        System.out.println("Found " + results.size() + " movies with prefix '" + prefix + "' before sorting");
+        
+        // Sort by relevance
+        results.sort(new MovieComparator(lowerPrefix));
+        List<Movie> limitedResults = results.subList(0, Math.min(limit, results.size()));
+        
+        System.out.println("Returning " + limitedResults.size() + " results after sorting and limiting");
+        return limitedResults;
     }
 
     // 递归收集所有可能的电影
@@ -102,17 +134,19 @@ public class Autocomplete {
             String title1 = m1.getTitle().toLowerCase();
             String title2 = m2.getTitle().toLowerCase();
 
-            // 如果前缀完全匹配，优先返回
-            if (title1.startsWith(prefix) && !title2.startsWith(prefix)) {
-                return -1;
-            }
-            if (!title1.startsWith(prefix) && title2.startsWith(prefix)) {
-                return 1;
-            }
+            // If one title starts with prefix and other doesn't, prioritize the matching one
+            boolean starts1 = title1.startsWith(prefix);
+            boolean starts2 = title2.startsWith(prefix);
+            
+            if (starts1 && !starts2) return -1;
+            if (!starts1 && starts2) return 1;
 
-            // 如果都完全匹配或都不完全匹配，按标题长度排序
-            // 标题更短的优先（通常更接近用户想要的结果）
-            return Integer.compare(title1.length(), title2.length());
+            // If both match or don't match, compare by title length
+            int lengthDiff = title1.length() - title2.length();
+            if (lengthDiff != 0) return lengthDiff;
+
+            // If lengths are equal, sort alphabetically
+            return title1.compareTo(title2);
         }
     }
 } 
