@@ -1,3 +1,5 @@
+package utils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
@@ -6,7 +8,7 @@ import java.util.Comparator;
 import models.Movie;
 
 public class Autocomplete {
-    // Trie 节点类
+    // Trie node class
     private static class TrieNode {
         private Map<Character, TrieNode> children;
         private boolean isEndOfWord;
@@ -25,7 +27,7 @@ public class Autocomplete {
         root = new TrieNode();
     }
 
-    // 插入电影到 Trie
+    // Insert movie into Trie
     public void insert(Movie movie) {
         TrieNode current = root;
         String lowerTitle = movie.getTitle().toLowerCase();
@@ -43,36 +45,36 @@ public class Autocomplete {
         current.movie = movie;
     }
 
-    // 根据前缀搜索匹配的电影
+    // Search movies by prefix
     public List<Movie> search(String prefix) {
-        return search(prefix, 10); // 默认返回10个结果
+        return search(prefix, 10); // Default return 10 results
     }
 
-    // 根据前缀搜索匹配的电影，限制返回数量
+    // Search movies by prefix with limit
     public List<Movie> search(String prefix, int limit) {
         List<Movie> results = new ArrayList<>();
         TrieNode current = root;
         String lowerPrefix = prefix.toLowerCase();
 
-        // 先找到前缀的最后一个节点
+        // Find the last node of the prefix
         for (int i = 0; i < lowerPrefix.length(); i++) {
             char c = lowerPrefix.charAt(i);
             
             if (!current.children.containsKey(c)) {
-                return results; // 如果没有找到前缀，返回空列表
+                return results; // Return empty list if prefix not found
             }
             current = current.children.get(c);
         }
 
-        // 从该节点开始，收集所有可能的电影
+        // Collect all possible movies from this node
         collectMovies(current, results);
 
-        // 按匹配度排序并限制返回数量
+        // Sort by match quality and limit results
         results.sort(new MovieComparator(prefix));
         return results.subList(0, Math.min(limit, results.size()));
     }
 
-    // 递归收集所有可能的电影
+    // Recursively collect all possible movies
     private void collectMovies(TrieNode node, List<Movie> results) {
         if (node == null) {
             return;
@@ -87,7 +89,7 @@ public class Autocomplete {
         }
     }
 
-    // 电影比较器，用于按匹配度排序
+    // Movie comparator for sorting by match quality
     private static class MovieComparator implements Comparator<Movie> {
         private final String prefix;
 
@@ -100,7 +102,7 @@ public class Autocomplete {
             String title1 = m1.getTitle().toLowerCase();
             String title2 = m2.getTitle().toLowerCase();
 
-            // 如果前缀完全匹配，优先返回
+            // If prefix matches exactly, prioritize
             if (title1.startsWith(prefix) && !title2.startsWith(prefix)) {
                 return -1;
             }
@@ -108,8 +110,8 @@ public class Autocomplete {
                 return 1;
             }
 
-            // 如果都完全匹配或都不完全匹配，按标题长度排序
-            // 标题更短的优先（通常更接近用户想要的结果）
+            // If both match or neither matches, sort by title length
+            // Shorter titles are usually more relevant
             return Integer.compare(title1.length(), title2.length());
         }
     }

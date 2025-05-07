@@ -9,6 +9,7 @@ import factories.ClientFactory;
 import factories.ServiceFactory;
 import models.Client;
 import models.Movie;
+import models.Autocomplete;
 import services.GameService;
 import services.MovieService;
 
@@ -23,6 +24,7 @@ import java.util.*;
 public class GameController implements HttpHandler {
     private final GameService gameService;
     private final MovieService movieService;
+    private final Autocomplete autocomplete;
     
     /**
      * Constructor
@@ -30,6 +32,14 @@ public class GameController implements HttpHandler {
     public GameController() {
         this.gameService = ServiceFactory.getGameService();
         this.movieService = ServiceFactory.getMovieService();
+        this.autocomplete = new Autocomplete();
+        
+        // Initialize autocomplete with all movies
+        List<Movie> allMovies = movieService.getAllMovies();
+        System.out.println("Initializing autocomplete with " + allMovies.size() + " movies");
+        for (Movie movie : allMovies) {
+            autocomplete.insert(movie);
+        }
     }
     
     @Override
@@ -250,15 +260,18 @@ public class GameController implements HttpHandler {
     private void handleSearchMovies(HttpExchange exchange, String query) throws IOException {
         // Parse query parameters
         Map<String, String> params = parseQueryParams(query);
-        String searchQuery = params.getOrDefault("q", "");
+        String searchTerm = params.getOrDefault("term", "");
+        int limit = Integer.parseInt(params.getOrDefault("limit", "10"));
         
-        // Search movies
-        List<Movie> movies = movieService.searchMovies(searchQuery);
+        System.out.println("Searching movies with term: " + searchTerm + ", limit: " + limit);
+        
+        // Use autocomplete to search movies
+        List<Movie> movies = autocomplete.search(searchTerm, limit);
+        
+        System.out.println("Found " + movies.size() + " movies matching '" + searchTerm + "'");
         
         // Build response data
-        Map<String, Object> data = new HashMap<>();
         List<Map<String, Object>> moviesData = new ArrayList<>();
-        
         for (Movie movie : movies) {
             Map<String, Object> movieData = new HashMap<>();
             movieData.put("id", movie.getId());
@@ -268,7 +281,9 @@ public class GameController implements HttpHandler {
             moviesData.add(movieData);
         }
         
+        Map<String, Object> data = new HashMap<>();
         data.put("movies", moviesData);
+        
         sendResponse(exchange, ApiResponse.success(data), 200);
     }
     

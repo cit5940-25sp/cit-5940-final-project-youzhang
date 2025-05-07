@@ -1,24 +1,70 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/nK589Lr0)
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=18841678&assignment_repo_type=AssignmentRepo)
-# Final Project Template
-Chenghao
-Erlang
-This is an example of a project directory for you to start working from. Please use it!
+# Movie Chain Game
 
+A web-based game where players take turns selecting movies that match specific genres. The game features a movie search functionality with autocomplete and power-ups like skip and block.
 
-```text
-|
-|--- .gitignore # lists all of the junk that might exist in your folder that should not be committed
-|--- README.md # explanation for the purpose of your repo
-|--- src
-    |----- *.java (source code files)
-|--- test
-    |----- *Test.java (unit test files)
-|--- web
-    |----- index.html (main game interface)
-    |----- css/style.css (styling)
-    |----- js/game.js (frontend logic)
+## Prerequisites
+
+- Java 8 or higher
+- Python 3 (for serving static files)
+
+## Project Structure
+
 ```
+.
+├── src/                    # Java source files
+│   ├── controllers/       # Game controllers
+│   ├── models/           # Data models
+│   ├── services/         # Business logic
+│   └── utils/            # Utility classes
+├── web/                   # Web interface files
+│   ├── css/              # Stylesheets
+│   └── js/               # JavaScript files
+└── target/               # Compiled Java classes
+```
+
+## How to Run
+
+1. First, compile the Java files:
+```bash
+javac -d target src/**/*.java
+```
+
+2. Start the game server:
+```bash
+java -cp target GameServer
+```
+
+3. Open your web browser and navigate to:
+```
+http://localhost:8080
+```
+
+## Game Rules
+
+1. Each player is assigned a target genre
+2. Players take turns selecting movies
+3. Each movie must match the previous movie's genre
+4. Players can use power-ups:
+   - Skip: Skip your turn
+   - Block: Block the next player's turn
+5. First player to collect enough movies of their target genre wins
+
+## Features
+
+- Real-time movie search with autocomplete
+- Genre-based movie selection
+- Power-ups for strategic gameplay
+- Responsive web interface
+- Detailed game status updates
+
+## Development
+
+The game is built using:
+- Java for the backend server
+- HTML/CSS/JavaScript for the frontend
+- Trie data structure for efficient movie search
 
 ## Backend Architecture
 
@@ -115,38 +161,6 @@ The frontend is built using HTML, CSS, and vanilla JavaScript:
    - Visual feedback for game actions
    - Automatic genre matching and counting
    - Responsive design for different screen sizes
-
-## How to Run the Project
-
-1. **Compile the Java code**
-   ```bash
-   javac -d bin -cp src src/*.java src/*/*.java
-   ```
-
-2. **Start the server**
-   ```bash
-   java -cp bin GameServer
-   ```
-   The server will start on port 8080 by default.
-
-3. **Access the game**
-   Open a web browser and navigate to:
-   ```
-   http://localhost:8080
-   ```
-
-4. **Game Setup**
-   - Enter player names
-   - Select target genres for each player
-   - Set the win condition (number of target genre movies to collect)
-   - Click "Start Game"
-
-5. **Troubleshooting**
-   - If you encounter "Address already in use" error, find and kill the process using port 8080:
-     ```bash
-     lsof -i :8080 | grep LISTEN
-     kill -9 [PID]
-     ```
 
 ## Technologies Used
 

@@ -1,3 +1,5 @@
+package utils;
+
 import java.io.IOException;
 import java.util.List;
 import factories.ServiceFactory;
@@ -18,34 +20,38 @@ public class MovieIndexer {
         movieService = ServiceFactory.getMovieService();
     }
 
-    // 使用DataLoader加载电影数据
+    // Load movies from CSV
     public void loadMoviesFromCSV(String csvFilePath) {
         try {
-            // 使用DataLoader加载电影数据
+            // Load movies using DataLoader
             DataLoader dataLoader = new DataLoader(movieService);
             dataLoader.loadMoviesFromCsv(csvFilePath);
             
-            // 将加载的电影添加到Autocomplete中
+            // Add loaded movies to Autocomplete
             for (Movie movie : movieService.getAllMovies()) {
                 autocomplete.insert(movie);
             }
         } catch (IOException e) {
-            System.err.println("读取CSV文件时出错: " + e.getMessage());
+            System.err.println("Error reading CSV file: " + e.getMessage());
             e.printStackTrace();
         } catch (Exception e) {
-            System.err.println("处理电影数据时出错: " + e.getMessage());
+            System.err.println("Error processing movie data: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    // 搜索电影
+    // Search movies
     public List<Movie> searchMovies(String prefix) {
         return autocomplete.search(prefix);
     }
 
-    // 设置返回结果的数量
+    // Search movies with limit
     public List<Movie> searchMovies(String prefix, int limit) {
         return autocomplete.search(prefix, limit);
     }
 
+    // Get autocomplete instance
+    public Autocomplete getAutocomplete() {
+        return autocomplete;
+    }
 } 

@@ -192,8 +192,8 @@ async function searchMovies() {
             return;
         }
         
-        // Send search request
-        const response = await apiRequest(`/movies/search?q=${encodeURIComponent(query)}`);
+        // Send search request with term parameter
+        const response = await apiRequest(`/movies/search?term=${encodeURIComponent(query)}&limit=10`);
         
         // Display search results
         displaySearchResults(response.data.movies);
