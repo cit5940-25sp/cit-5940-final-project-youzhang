@@ -1,5 +1,7 @@
 package controllers;
-
+/*
+ * test for GameController.java
+ */
 import api.responses.ApiResponse;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
