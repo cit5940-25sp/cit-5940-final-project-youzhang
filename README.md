@@ -51,6 +51,31 @@ java -cp bin GameServer
 java -cp bin:lib/json-simple-1.1.1.jar GameTUI
 ```
 
+## Running Tests
+
+The project includes comprehensive unit tests for various components. To run the tests:
+
+1. Compile the test files:
+```bash
+javac -cp ".:lib/*:src:test" test/utils/*.java
+```
+
+2. Run all tests:
+```bash
+java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieIndexerTest utils.AutocompleteTest utils.MovieCsvParserTest utils.DataLoaderTest
+```
+
+3. To run a specific test class:
+```bash
+java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieCsvParserTest
+```
+
+The test suite includes tests for:
+- Movie CSV parsing
+- Movie indexing
+- Autocomplete functionality
+- Data loading
+
 ## Game Rules
 
 1. Each player is assigned a target genre
