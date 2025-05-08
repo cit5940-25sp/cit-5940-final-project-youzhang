@@ -36,6 +36,13 @@ public class MovieService {
     }
     
     /**
+     * Get movie cache
+     */
+    public Map<Integer, Movie> getMovieCache() {
+        return movieCache;
+    }
+    
+    /**
      * Search movies
      */
     public List<Movie> searchMovies(String query) {

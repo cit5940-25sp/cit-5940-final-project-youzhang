@@ -5,7 +5,10 @@ import models.Movie;
 import factories.ServiceFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Service class, handles the overall game logic
@@ -20,6 +23,10 @@ public class GameService {
     private int turnCount;
     private boolean gameOver;
     private Client winner;
+    
+    // timing related attributes
+    private long currentTurnStartTime; // current turn start time
+    private static final long TURN_TIME_LIMIT = 30 * 1000; // 30 seconds, unit milliseconds
     
     /**
      * Constructor
@@ -46,10 +53,67 @@ public class GameService {
     public void initGame(List<Client> players) {
         this.players = new ArrayList<>(players);
         this.currentPlayerIndex = 0;
-        this.lastMovie = null;
         this.turnCount = 1;
         this.gameOver = false;
         this.winner = null;
+        
+        // initialize turn timer
+        this.currentTurnStartTime = System.currentTimeMillis();
+        
+        // Select a random movie as the initial movie
+        selectRandomInitialMovie();
+    }
+    
+    /**
+     * Select a random movie as the initial movie that matches player genres
+     */
+    private void selectRandomInitialMovie() {
+        if (players.isEmpty()) {
+            System.out.println("Warning: No players available for genre matching");
+            return;
+        }
+        
+        Map<Integer, Movie> movieCache = movieService.getMovieCache();
+        if (movieCache.isEmpty()) {
+            System.out.println("Warning: No movies available for random selection");
+            return;
+        }
+        
+        // Collect all target genres from players
+        Set<String> targetGenres = new HashSet<>();
+        for (Client player : players) {
+            targetGenres.add(player.getTargetGenre().toLowerCase());
+        }
+        
+        // Filter movies that match any of the target genres
+        List<Movie> matchingMovies = new ArrayList<>();
+        for (Movie movie : movieCache.values()) {
+            Set<String> movieGenres = movie.getGenre();
+            if (movieGenres != null) {
+                for (String genre : movieGenres) {
+                    if (targetGenres.contains(genre.toLowerCase())) {
+                        matchingMovies.add(movie);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // If no matching movies found, use all movies
+        if (matchingMovies.isEmpty()) {
+            System.out.println("Warning: No movies matching player genres, using random movie");
+            matchingMovies = new ArrayList<>(movieCache.values());
+        }
+        
+        // Select a random movie from matching movies
+        int randomIndex = (int) (Math.random() * matchingMovies.size());
+        Movie randomMovie = matchingMovies.get(randomIndex);
+        
+        // Set as the last movie
+        this.lastMovie = randomMovie;
+        
+        System.out.println("Selected random initial movie: " + randomMovie.getTitle() + 
+                           " with genres: " + randomMovie.getGenre());
     }
     
     /**
@@ -105,12 +169,24 @@ public class GameService {
         if (currentPlayerIndex == 0) {
             turnCount++;
         }
+        
+        // reset turn timer
+        this.currentTurnStartTime = System.currentTimeMillis();
     }
     
     /**
      * Process movie selection
      */
     public boolean processMovieSelection(int movieId) {
+        // check turn time out
+        if (isTurnTimeOut()) {
+            // If turn time out, set the opponent as winner
+            int opponentIndex = (currentPlayerIndex + 1) % players.size();
+            winner = players.get(opponentIndex);
+            gameOver = true;
+            return false;
+        }
+        
         Movie movie = movieService.getMovieById(movieId);
         if (movie == null) {
             return false;
@@ -150,14 +226,14 @@ public class GameService {
         // Mark player as having selected a movie this turn
         currentPlayer.selectMovie();
         
-        // Check win condition
+        // check win condition
         if (clientService.checkWinCondition(currentPlayer)) {
             gameOver = true;
             winner = currentPlayer;
             return true;
         }
         
-        // No longer automatically switch to next player, frontend will call nextPlayer API
+        // no longer automatically switch to next player, frontend will call nextPlayer API
         return true;
     }
     
@@ -185,7 +261,7 @@ public class GameService {
         // Mark current player as having used skip ability
         clientService.useSkip(currentPlayer);
         
-        // No longer automatically switch to next player, frontend will call nextPlayer API
+        // no longer automatically switch to next player, frontend will call nextPlayer API
         return true;
     }
     
@@ -213,7 +289,7 @@ public class GameService {
         // Mark current player as having used block ability
         clientService.useBlock(currentPlayer);
         
-        // No longer automatically switch to next player, frontend will call nextPlayer API
+        // no longer automatically switch to next player, frontend will call nextPlayer API
         return true;
     }
     
@@ -250,5 +326,21 @@ public class GameService {
      */
     public List<Client> getPlayers() {
         return new ArrayList<>(players);
+    }
+    
+    /**
+     * check if turn time out
+     */
+    public boolean isTurnTimeOut() {
+        return System.currentTimeMillis() - currentTurnStartTime >= TURN_TIME_LIMIT;
+    }
+    
+    /**
+     * get remaining turn time (milliseconds)
+     */
+    public long getRemainingTurnTime() {
+        long elapsed = System.currentTimeMillis() - currentTurnStartTime;
+        long remaining = TURN_TIME_LIMIT - elapsed;
+        return Math.max(0, remaining);
     }
 }
