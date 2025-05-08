@@ -144,21 +144,81 @@ public class GameTUI {
             player1Name, player1Genre, player2Name, player2Genre, winThreshold
         );
         
-        JSONObject response = sendPostRequest(endpoint, requestBody);
-        
-        if ((boolean) response.get("success")) {
-            gameStarted = true;
-            JSONObject data = (JSONObject) response.get("data");
-            currentPlayerIndex = ((Long) data.get("currentPlayerIndex")).intValue();
+        try {
+            JSONObject response = sendPostRequest(endpoint, requestBody);
             
-            JSONObject initialMovie = (JSONObject) data.get("initialMovie");
-            lastMovieTitle = (String) initialMovie.get("title");
+            if (response == null) {
+                System.out.println("Error: No response from server");
+                return;
+            }
             
-            System.out.println("Game started successfully!");
-            System.out.println("Initial movie: " + lastMovieTitle);
-            System.out.println("Current player: " + getCurrentPlayerName());
-        } else {
-            System.out.println("Failed to start game: " + response.get("message"));
+            Object codeObj = response.get("code");
+            if (codeObj == null) {
+                System.out.println("Error: Invalid response format from server");
+                return;
+            }
+            
+            int code = ((Long) codeObj).intValue();
+            if (code == 200) {
+                gameStarted = true;
+                JSONObject data = (JSONObject) response.get("data");
+                if (data == null) {
+                    System.out.println("Error: Invalid response format from server");
+                    return;
+                }
+                
+                Object currentPlayerIndexObj = data.get("currentPlayerIndex");
+                if (currentPlayerIndexObj == null) {
+                    System.out.println("Error: Missing current player index in server response");
+                    return;
+                }
+                currentPlayerIndex = ((Long) currentPlayerIndexObj).intValue();
+                
+                // Get the first movie from the first player's movies
+                JSONArray players = (JSONArray) data.get("players");
+                if (players == null || players.isEmpty()) {
+                    System.out.println("Error: No players in server response");
+                    return;
+                }
+                
+                JSONObject firstPlayer = (JSONObject) players.get(0);
+                JSONArray movies = (JSONArray) firstPlayer.get("movies");
+                if (movies == null || movies.isEmpty()) {
+                    System.out.println("Error: No movies in server response");
+                    return;
+                }
+                
+                JSONObject firstMovie = (JSONObject) movies.get(0);
+                Object titleObj = firstMovie.get("title");
+                if (titleObj == null) {
+                    System.out.println("Error: Missing movie title in server response");
+                    return;
+                }
+                lastMovieTitle = (String) titleObj;
+                
+                System.out.println("Game started successfully!");
+                System.out.println("Initial movie: " + lastMovieTitle);
+                System.out.println("Current player: " + getCurrentPlayerName());
+                
+                // Print player information
+                System.out.println("\nPlayer Information:");
+                for (int i = 0; i < players.size(); i++) {
+                    JSONObject player = (JSONObject) players.get(i);
+                    System.out.println("Player " + (i + 1) + ": " + player.get("name") + 
+                                     " (Target Genre: " + player.get("targetGenre") + ")");
+                }
+            } else {
+                String errorMessage = (String) response.get("message");
+                System.out.println("Failed to start game: " + (errorMessage != null ? errorMessage : "Unknown error"));
+            }
+        } catch (IOException e) {
+            System.out.println("Error connecting to server: " + e.getMessage());
+            System.out.println("Make sure the server is running on port 8080");
+        } catch (ParseException e) {
+            System.out.println("Error parsing server response: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -173,8 +233,20 @@ public class GameTUI {
         String endpoint = "/game/status";
         JSONObject response = sendGetRequest(endpoint);
         
-        if ((boolean) response.get("success")) {
+        Object codeObj = response.get("code");
+        if (codeObj == null) {
+            System.out.println("Error: Invalid response format from server");
+            return;
+        }
+        
+        int code = ((Long) codeObj).intValue();
+        if (code == 200) {
             JSONObject data = (JSONObject) response.get("data");
+            if (data == null) {
+                System.out.println("Error: Invalid response format from server");
+                return;
+            }
+            
             boolean gameOver = (boolean) data.get("gameOver");
             currentPlayerIndex = ((Long) data.get("currentPlayerIndex")).intValue();
             
@@ -193,13 +265,17 @@ public class GameTUI {
             
             // Check time
             JSONObject timeResponse = sendGetRequest("/game/check-time");
-            if ((boolean) timeResponse.get("success")) {
+            Object timeCodeObj = timeResponse.get("code");
+            if (timeCodeObj != null && ((Long) timeCodeObj).intValue() == 200) {
                 JSONObject timeData = (JSONObject) timeResponse.get("data");
-                long remainingTurnTime = (Long) timeData.get("remainingTurnTime");
-                System.out.println("Remaining turn time: " + (remainingTurnTime / 1000) + " seconds");
+                if (timeData != null) {
+                    long remainingTurnTime = (Long) timeData.get("remainingTurnTime");
+                    System.out.println("Remaining turn time: " + (remainingTurnTime / 1000) + " seconds");
+                }
             }
         } else {
-            System.out.println("Failed to get game status: " + response.get("message"));
+            String errorMessage = (String) response.get("message");
+            System.out.println("Failed to get game status: " + (errorMessage != null ? errorMessage : "Unknown error"));
         }
     }
     
@@ -224,11 +300,22 @@ public class GameTUI {
         String endpoint = "/movies/search?term=" + searchTerm + "&limit=10";
         JSONObject response = sendGetRequest(endpoint);
         
-        if ((boolean) response.get("success")) {
+        Object codeObj = response.get("code");
+        if (codeObj == null) {
+            System.out.println("Error: Invalid response format from server");
+            return;
+        }
+        
+        int code = ((Long) codeObj).intValue();
+        if (code == 200) {
             JSONObject data = (JSONObject) response.get("data");
-            JSONArray movies = (JSONArray) data.get("movies");
+            if (data == null) {
+                System.out.println("Error: Invalid response format from server");
+                return;
+            }
             
-            if (movies.isEmpty()) {
+            JSONArray movies = (JSONArray) data.get("movies");
+            if (movies == null || movies.isEmpty()) {
                 System.out.println("No movies found matching '" + searchTerm + "'");
                 return;
             }
@@ -254,14 +341,23 @@ public class GameTUI {
             endpoint = "/movies/select?id=" + movieId;
             JSONObject selectResponse = sendPostRequest(endpoint, "");
             
-            if ((boolean) selectResponse.get("success")) {
+            Object selectCodeObj = selectResponse.get("code");
+            if (selectCodeObj == null) {
+                System.out.println("Error: Invalid response format from server");
+                return;
+            }
+            
+            int selectCode = ((Long) selectCodeObj).intValue();
+            if (selectCode == 200) {
                 System.out.println("Movie selected successfully: " + selectedMovie.get("title"));
                 lastMovieTitle = (String) selectedMovie.get("title");
             } else {
-                System.out.println("Failed to select movie: " + selectResponse.get("message"));
+                String errorMessage = (String) selectResponse.get("message");
+                System.out.println("Failed to select movie: " + (errorMessage != null ? errorMessage : "Unknown error"));
             }
         } else {
-            System.out.println("Failed to search movies: " + response.get("message"));
+            String errorMessage = (String) response.get("message");
+            System.out.println("Failed to search movies: " + (errorMessage != null ? errorMessage : "Unknown error"));
         }
     }
     
@@ -307,13 +403,25 @@ public class GameTUI {
         String endpoint = "/actions/next";
         JSONObject response = sendPostRequest(endpoint, "");
         
-        if ((boolean) response.get("success")) {
+        Object codeObj = response.get("code");
+        if (codeObj == null) {
+            System.out.println("Error: Invalid response format from server");
+            return;
+        }
+        
+        int code = ((Long) codeObj).intValue();
+        if (code == 200) {
             JSONObject data = (JSONObject) response.get("data");
-            currentPlayerIndex = ((Long) data.get("currentPlayerIndex")).intValue();
+            if (data == null) {
+                System.out.println("Error: Invalid response format from server");
+                return;
+            }
             
+            currentPlayerIndex = ((Long) data.get("currentPlayerIndex")).intValue();
             System.out.println("Switched to next player: " + getCurrentPlayerName());
         } else {
-            System.out.println("Failed to switch to next player: " + response.get("message"));
+            String errorMessage = (String) response.get("message");
+            System.out.println("Failed to switch to next player: " + (errorMessage != null ? errorMessage : "Unknown error"));
         }
     }
     
@@ -348,20 +456,34 @@ public class GameTUI {
     
     private static JSONObject handleResponse(HttpURLConnection connection) throws IOException, ParseException {
         int responseCode = connection.getResponseCode();
+        BufferedReader in = null;
         
-        if (responseCode == HttpURLConnection.HTTP_OK) {
-            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String inputLine;
+        try {
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            } else {
+                in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+            }
+            
             StringBuilder response = new StringBuilder();
+            String inputLine;
             
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
-            in.close();
             
-            return (JSONObject) jsonParser.parse(response.toString());
-        } else {
-            throw new IOException("HTTP error code: " + responseCode);
+            JSONObject jsonResponse = (JSONObject) jsonParser.parse(response.toString());
+            
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                String message = (String) jsonResponse.get("message");
+                throw new IOException(message != null ? message : "HTTP error code: " + responseCode);
+            }
+            
+            return jsonResponse;
+        } finally {
+            if (in != null) {
+                in.close();
+            }
         }
     }
 }
