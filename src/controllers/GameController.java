@@ -85,6 +85,9 @@ public class GameController implements HttpHandler {
                 case "POST /actions/next":
                     handleNextPlayer(exchange);
                     break;
+                case "GET /game/check-time":
+                    handleCheckTime(exchange);
+                    break;
                 default:
                     sendResponse(exchange, ApiResponse.error(404, "Not Found"), 404);
                     break;
@@ -501,5 +504,50 @@ public class GameController implements HttpHandler {
         OutputStream outputStream = exchange.getResponseBody();
         outputStream.write(responseBytes);
         outputStream.close();
+    }
+    
+    /**
+     * Handle check time request
+     */
+    private void handleCheckTime(HttpExchange exchange) throws IOException {
+        boolean isTurnTimeOut = gameService.isTurnTimeOut();
+        boolean isGameOver = gameService.isGameOver();
+        
+        // construct response data
+        Map<String, Object> data = new HashMap<>();
+        data.put("isTurnTimeOut", isTurnTimeOut);
+        data.put("isGameOver", isGameOver);
+        data.put("remainingTurnTime", gameService.getRemainingTurnTime());
+        
+        // If turn time out and game is not over yet, we need to handle it consistently with processMovieSelection
+        // We'll call processMovieSelection with an invalid movie ID to trigger the timeout logic
+        if (isTurnTimeOut && !isGameOver) {
+            // This will trigger the timeout logic in processMovieSelection
+            // which sets the opponent as winner and marks the game as over
+            gameService.processMovieSelection(-1); // Using an invalid movie ID
+            
+            // Update our local variables after the game state has changed
+            isGameOver = gameService.isGameOver();
+            data.put("isGameOver", isGameOver);
+        }
+        
+        // add player information
+        List<Map<String, Object>> playersData = new ArrayList<>();
+        for (Client player : gameService.getPlayers()) {
+            Map<String, Object> playerData = new HashMap<>();
+            playerData.put("name", player.getName());
+            playersData.add(playerData);
+        }
+        data.put("players", playersData);
+        
+        // if game is over, add winner information
+        if (isGameOver) {
+            Client winner = gameService.getWinner();
+            if (winner != null) {
+                data.put("winner", winner.getName());
+            }
+        }
+        
+        sendResponse(exchange, ApiResponse.success(data), 200);
     }
 }
