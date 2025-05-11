@@ -36,7 +36,7 @@ public class GameServer {
             if (projectPath.endsWith("/bin")) {
                 projectPath = projectPath.substring(0, projectPath.length() - 4);
             }
-            dataLoader.loadMoviesFromCsv(projectPath + "/movies.csv");
+            dataLoader.loadMoviesFromCsv(projectPath + "/src/movies.csv");
         } catch (IOException e) {
             System.err.println("加载电影数据时发生错误: " + e.getMessage());
         }

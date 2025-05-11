@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Set;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
@@ -33,6 +34,18 @@ public class GameTUI {
     
     public static void main(String[] args) {
         System.out.println("=== Movie Connection Game TUI ===");
+        System.out.println("Welcome to the Movie Connection Game!");
+        System.out.println("This is a text-based interface for the game.");
+        System.out.println("Make sure the game server is running on http://localhost:8080");
+        
+        // Check if server is running
+        try {
+            JSONObject response = sendGetRequest("/game/status");
+            System.out.println("Server connection successful!");
+        } catch (Exception e) {
+            System.out.println("Warning: Could not connect to game server at " + API_BASE_URL);
+            System.out.println("Make sure the server is running before starting a game.");
+        }
         
         while (true) {
             displayMenu();
@@ -62,8 +75,12 @@ public class GameTUI {
                         System.out.println("Exiting game. Goodbye!");
                         return;
                 }
+            } catch (IOException e) {
+                System.out.println("Connection error: " + e.getMessage());
+                System.out.println("Make sure the game server is running at " + API_BASE_URL);
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage());
+                e.printStackTrace();
             }
             
             System.out.println("\nPress Enter to continue...");
@@ -72,13 +89,22 @@ public class GameTUI {
     }
     
     private static void displayMenu() {
-        System.out.println("\n=== Main Menu ===");
-        System.out.println("1. Setup Game");
-        System.out.println("2. Start Game");
-        System.out.println("3. Get Game Status");
-        System.out.println("4. Search and Select Movie");
-        System.out.println("5. Use Ability (Skip/Block)");
-        System.out.println("6. Next Player");
+        System.out.println("\n=== Movie Connection Game - Main Menu ===");
+        if (!gameStarted) {
+            System.out.println("1. Setup Game");
+            System.out.println("2. Start Game");
+            System.out.println("3. Get Game Status");
+            System.out.println("4. Search and Select Movie (Game not started)");
+            System.out.println("5. Use Ability (Game not started)");
+            System.out.println("6. Next Player (Game not started)");
+        } else {
+            System.out.println("1. Setup Game (Game already started)");
+            System.out.println("2. Start Game (Game already started)");
+            System.out.println("3. Get Game Status");
+            System.out.println("4. Search and Select Movie");
+            System.out.println("5. Use Ability (Skip/Block)");
+            System.out.println("6. Next Player");
+        }
         System.out.println("7. Exit");
         System.out.print("Enter your choice (1-7): ");
     }
@@ -249,14 +275,66 @@ public class GameTUI {
             
             boolean gameOver = (boolean) data.get("gameOver");
             currentPlayerIndex = ((Long) data.get("currentPlayerIndex")).intValue();
+            int turnCount = ((Long) data.get("turnCount")).intValue();
             
             System.out.println("Game is " + (gameOver ? "over" : "in progress"));
+            System.out.println("Turn count: " + turnCount);
             System.out.println("Current player: " + getCurrentPlayerName());
             
             if (data.containsKey("lastMovie")) {
                 JSONObject lastMovie = (JSONObject) data.get("lastMovie");
                 lastMovieTitle = (String) lastMovie.get("title");
-                System.out.println("Last movie: " + lastMovieTitle);
+                Long releaseYear = (Long) lastMovie.get("releaseYear");
+                
+                // Get genres
+                StringBuilder genreStr = new StringBuilder();
+                Object genreObj = lastMovie.get("genre");
+                if (genreObj instanceof JSONArray) {
+                    JSONArray genres = (JSONArray) genreObj;
+                    for (int i = 0; i < genres.size(); i++) {
+                        if (i > 0) genreStr.append(", ");
+                        genreStr.append(genres.get(i));
+                    }
+                }
+                
+                System.out.println("Last movie: " + lastMovieTitle + " (" + releaseYear + ") - " + genreStr);
+            }
+            
+            // Display player information
+            JSONArray players = (JSONArray) data.get("players");
+            if (players != null) {
+                System.out.println("\nPlayer Information:");
+                for (int i = 0; i < players.size(); i++) {
+                    JSONObject player = (JSONObject) players.get(i);
+                    String name = (String) player.get("name");
+                    String targetGenre = (String) player.get("targetGenre");
+                    Long targetGenreCount = (Long) player.get("targetGenreCount");
+                    Long winThreshold = (Long) player.get("winThreshold");
+                    boolean skipAvailable = (boolean) player.get("skipAvailable");
+                    boolean blockAvailable = (boolean) player.get("blockAvailable");
+                    boolean isSkipped = (boolean) player.get("isSkipped");
+                    boolean isBlocked = (boolean) player.get("isBlocked");
+                    
+                    System.out.println("Player " + (i + 1) + ": " + name);
+                    System.out.println("  Target Genre: " + targetGenre + " (" + targetGenreCount + "/" + winThreshold + ")");
+                    System.out.println("  Special Abilities: Skip " + (skipAvailable ? "[Available]" : "[Used]") + 
+                                      ", Block " + (blockAvailable ? "[Available]" : "[Used]"));
+                    if (isSkipped) System.out.println("  Status: SKIPPED");
+                    if (isBlocked) System.out.println("  Status: BLOCKED");
+                    
+                    // Display player's movies
+                    JSONArray movies = (JSONArray) player.get("movies");
+                    if (movies != null && !movies.isEmpty()) {
+                        System.out.println("  Movies:");
+                        for (int j = 0; j < movies.size(); j++) {
+                            JSONObject movie = (JSONObject) movies.get(j);
+                            String title = (String) movie.get("title");
+                            Long year = (Long) movie.get("releaseYear");
+                            System.out.println("    " + (j + 1) + ". " + title + " (" + year + ")");
+                        }
+                    }
+                    System.out.println();
+                }
             }
             
             if (gameOver && data.containsKey("winner")) {
@@ -323,7 +401,25 @@ public class GameTUI {
             System.out.println("\nSearch results:");
             for (int i = 0; i < movies.size(); i++) {
                 JSONObject movie = (JSONObject) movies.get(i);
-                System.out.printf("%d. %s (%d)\n", i + 1, movie.get("title"), movie.get("year"));
+                String title = (String) movie.get("title");
+                Long releaseYear = (Long) movie.get("releaseYear");
+                
+                // Get genres as a formatted string
+                String genreStr = "Unknown";
+                Object genreObj = movie.get("genre");
+                if (genreObj instanceof JSONArray) {
+                    JSONArray genres = (JSONArray) genreObj;
+                    if (!genres.isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (int j = 0; j < genres.size(); j++) {
+                            if (j > 0) sb.append(", ");
+                            sb.append(genres.get(j));
+                        }
+                        genreStr = sb.toString();
+                    }
+                }
+                
+                System.out.printf("%d. %s (%d) - %s\n", i + 1, title, releaseYear, genreStr);
             }
             
             System.out.print("\nSelect a movie (1-" + movies.size() + ") or 0 to cancel: ");
@@ -351,6 +447,9 @@ public class GameTUI {
             if (selectCode == 200) {
                 System.out.println("Movie selected successfully: " + selectedMovie.get("title"));
                 lastMovieTitle = (String) selectedMovie.get("title");
+                
+                // Get updated game status to show current state
+                getGameStatus();
             } else {
                 String errorMessage = (String) selectResponse.get("message");
                 System.out.println("Failed to select movie: " + (errorMessage != null ? errorMessage : "Unknown error"));
@@ -370,8 +469,25 @@ public class GameTUI {
         System.out.println("\n=== Use Ability ===");
         System.out.println("Current player: " + getCurrentPlayerName());
         
-        System.out.println("1. Skip (skip opponent's next turn)");
-        System.out.println("2. Block (block opponent's next move)");
+        // Get current player's ability status first
+        String statusEndpoint = "/game/status";
+        JSONObject statusResponse = sendGetRequest(statusEndpoint);
+        
+        if (((Long) statusResponse.get("code")).intValue() != 200) {
+            System.out.println("Error: Could not get player status");
+            return;
+        }
+        
+        JSONObject data = (JSONObject) statusResponse.get("data");
+        JSONArray players = (JSONArray) data.get("players");
+        JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);
+        
+        boolean skipAvailable = (boolean) currentPlayer.get("skipAvailable");
+        boolean blockAvailable = (boolean) currentPlayer.get("blockAvailable");
+        
+        System.out.println("Available abilities:");
+        System.out.println("1. Skip (skip opponent's next turn) " + (skipAvailable ? "[Available]" : "[Used]"));
+        System.out.println("2. Block (block opponent's next move) " + (blockAvailable ? "[Available]" : "[Used]"));
         System.out.println("3. Cancel");
         System.out.print("Choose ability: ");
         
@@ -382,13 +498,31 @@ public class GameTUI {
             return;
         }
         
+        // Check if ability is available
+        if (choice == 1 && !skipAvailable) {
+            System.out.println("Skip ability has already been used");
+            return;
+        } else if (choice == 2 && !blockAvailable) {
+            System.out.println("Block ability has already been used");
+            return;
+        }
+        
         String endpoint = choice == 1 ? "/actions/skip" : "/actions/block";
         JSONObject response = sendPostRequest(endpoint, "");
         
-        if ((boolean) response.get("success")) {
+        Object codeObj = response.get("code");
+        if (codeObj == null) {
+            System.out.println("Error: Invalid response format from server");
+            return;
+        }
+        
+        int code = ((Long) codeObj).intValue();
+        if (code == 200) {
             System.out.println("Ability used successfully: " + (choice == 1 ? "Skip" : "Block"));
+            System.out.println("Remember to click 'Next Player' to end your turn");
         } else {
-            System.out.println("Failed to use ability: " + response.get("message"));
+            String errorMessage = (String) response.get("message");
+            System.out.println("Failed to use ability: " + (errorMessage != null ? errorMessage : "Unknown error"));
         }
     }
     
