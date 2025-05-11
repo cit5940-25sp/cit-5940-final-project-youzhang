@@ -5,8 +5,10 @@ import models.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service class, handles movie-related business logic
@@ -40,6 +42,20 @@ public class MovieService {
      */
     public Map<Integer, Movie> getMovieCache() {
         return movieCache;
+    }
+    
+    /**
+     * Get all unique genres from the movie database
+     * @return A set of all genres present in the movie database
+     */
+    public Set<String> getAllGenres() {
+        Set<String> allGenres = new HashSet<>();
+        
+        for (Movie movie : movieCache.values()) {
+            allGenres.addAll(movie.getGenre());
+        }
+        
+        return allGenres;
     }
     
     /**

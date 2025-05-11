@@ -234,8 +234,18 @@ public class GameTUI {
                                      " (Target Genre: " + player.get("targetGenre") + ")");
                 }
             } else {
+                // 处理错误响应
                 String errorMessage = (String) response.get("message");
-                System.out.println("Failed to start game: " + (errorMessage != null ? errorMessage : "Unknown error"));
+                System.out.println("\n=== 游戏启动失败 ===\n");
+                System.out.println("错误: " + (errorMessage != null ? errorMessage : "Unknown error"));
+                
+                // 简化的错误处理
+                System.out.println("\n您输入的电影类型不存在于数据库中。");
+                System.out.println("请选择有效的电影类型，例如: Action, Comedy, Drama");
+                System.out.println("\n程序将退出，请重新启动游戏。");
+                
+                // 直接终止程序
+                System.exit(1);
             }
         } catch (IOException e) {
             System.out.println("Error connecting to server: " + e.getMessage());
