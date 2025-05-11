@@ -129,21 +129,15 @@ public class GameController implements HttpHandler {
         int winThreshold = Integer.parseInt(params.getOrDefault("winThreshold", "3"));
         
         // Create players
+        Client player1 = ClientFactory.createClient(player1Name, player1Genre, winThreshold);
+        Client player2 = ClientFactory.createClient(player2Name, player2Genre, winThreshold);
+        
         List<Client> players = new ArrayList<>();
-        try {
-            Client player1 = ClientFactory.createClient(player1Name, player1Genre, winThreshold);
-            Client player2 = ClientFactory.createClient(player2Name, player2Genre, winThreshold);
-            
-            players.add(player1);
-            players.add(player2);
-            
-            // Initialize game
-            gameService.initGame(players);
-        } catch (IllegalArgumentException e) {
-            // 处理目标类型验证失败的情况
-            sendResponse(exchange, ApiResponse.error(400, "Invalid genre"), 400);
-            return;
-        }
+        players.add(player1);
+        players.add(player2);
+        
+        // Initialize game
+        gameService.initGame(players);
         
         // Get game status
         boolean gameOver = gameService.isGameOver();

@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import controllers.GameController;
 import utils.DataLoader;
 import java.io.IOException;
+import java.io.File;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.net.InetSocketAddress;
 
 /**
@@ -45,7 +47,42 @@ public class GameServer {
         GameController gameController = new GameController();
         server.createContext("/api", gameController);
         
-
+        // Register static file handler for web files
+        server.createContext("/", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            
+            // Default to index.html
+            if (path.equals("/")) {
+                path = "/index.html";
+            }
+            
+            // Get the file from the web directory
+            File file = new File("web" + path);
+            
+            if (!file.exists()) {
+                String response = "404 (Not Found)";
+                exchange.sendResponseHeaders(404, response.length());
+                try (OutputStream os = exchange.getResponseBody()) {
+                    os.write(response.getBytes());
+                }
+                return;
+            }
+            
+            // Set content type
+            String contentType = "text/html";
+            if (path.endsWith(".css")) {
+                contentType = "text/css";
+            } else if (path.endsWith(".js")) {
+                contentType = "text/javascript";
+            }
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            
+            // Send file content
+            exchange.sendResponseHeaders(200, file.length());
+            try (OutputStream os = exchange.getResponseBody()) {
+                Files.copy(file.toPath(), os);
+            }
+        });
         
         // 设置线程池
         server.setExecutor(null); // 使用默认执行器
@@ -58,7 +95,7 @@ public class GameServer {
         if (server != null) {
             server.start();
             System.out.println("游戏服务器已启动，监听端口: " + port);
-            System.out.println("服务器API地址: http://localhost:" + port + "/api");
+            System.out.println("Open http://localhost:" + port + " to play the game");
         } else {
             System.err.println("服务器未初始化，请先调用initialize()方法");
         }
