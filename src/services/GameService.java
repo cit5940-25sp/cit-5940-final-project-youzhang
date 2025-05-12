@@ -5,6 +5,7 @@ import models.Movie;
 import factories.ServiceFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,6 @@ public class GameService {
     
     private List<Client> players;
     private int currentPlayerIndex;
-    private Movie lastMovie;
     private int turnCount;
     private boolean gameOver;
     private Client winner;
@@ -49,8 +49,10 @@ public class GameService {
     
     /**
      * Initialize game
+     * @param players List of players to initialize the game with
+     * @return The initial movie that was selected, or null if no suitable movie was found
      */
-    public void initGame(List<Client> players) {
+    public Movie initGame(List<Client> players) {
         this.players = new ArrayList<>(players);
         this.currentPlayerIndex = 0;
         this.turnCount = 1;
@@ -60,60 +62,89 @@ public class GameService {
         // initialize turn timer
         this.currentTurnStartTime = System.currentTimeMillis();
         
-        // Select a random movie as the initial movie
-        selectRandomInitialMovie();
+        // Select a random movie as the initial movie that matches all players' win genres
+        Movie initialMovie = selectRandomInitialMovie();
+        
+        // If a suitable initial movie was found, add it to all players' collections
+        // but don't count it towards their genre counts for win condition
+        if (initialMovie != null) {
+            for (Client player : players) {
+                // We need to add the movie to the player's collection without counting genres
+                // This requires direct access to the player's movieCollection
+                // Since we can't modify the Client class, we'll use the ClientService
+                clientService.addInitialMovieToClient(player, initialMovie);
+            }
+        }
+        
+        return initialMovie;
     }
     
     /**
-     * Select a random movie as the initial movie that matches player genres
+     * Select a random movie as the initial movie that matches ALL player win genres
+     * @return The selected movie, or null if no matching movie found
      */
-    private void selectRandomInitialMovie() {
+    private Movie selectRandomInitialMovie() {
         if (players.isEmpty()) {
             System.out.println("Warning: No players available for genre matching");
-            return;
+            return null;
         }
         
         Map<Integer, Movie> movieCache = movieService.getMovieCache();
         if (movieCache.isEmpty()) {
             System.out.println("Warning: No movies available for random selection");
-            return;
+            return null;
         }
         
-        // Collect all target genres from players
-        Set<String> targetGenres = new HashSet<>();
+        // Collect all unique win genres from players
+        Set<String> playerGenres = new HashSet<>();
         for (Client player : players) {
-            targetGenres.add(player.getTargetGenre().toLowerCase());
+            playerGenres.add(player.getWinGenre());
         }
         
-        // Filter movies that match any of the target genres
+        // Filter movies that contain ALL players' win genres
         List<Movie> matchingMovies = new ArrayList<>();
         for (Movie movie : movieCache.values()) {
             Set<String> movieGenres = movie.getGenre();
-            if (movieGenres != null) {
-                for (String genre : movieGenres) {
-                    if (targetGenres.contains(genre.toLowerCase())) {
-                        matchingMovies.add(movie);
+            if (movieGenres != null && !movieGenres.isEmpty()) {
+                boolean containsAllGenres = true;
+                
+                // Check if movie contains all required genres
+                for (String requiredGenre : playerGenres) {
+                    boolean containsThisGenre = false;
+                    
+                    for (String movieGenre : movieGenres) {
+                        if (movieGenre.equalsIgnoreCase(requiredGenre)) {
+                            containsThisGenre = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!containsThisGenre) {
+                        containsAllGenres = false;
                         break;
                     }
+                }
+                
+                if (containsAllGenres) {
+                    matchingMovies.add(movie);
                 }
             }
         }
         
-        // If no matching movies found, use all movies
+        // If no matching movies found, return null
         if (matchingMovies.isEmpty()) {
-            System.out.println("Warning: No movies matching player genres, using random movie");
-            matchingMovies = new ArrayList<>(movieCache.values());
+            System.out.println("Warning: No movies matching ALL player win genres");
+            return null;
         }
         
         // Select a random movie from matching movies
         int randomIndex = (int) (Math.random() * matchingMovies.size());
         Movie randomMovie = matchingMovies.get(randomIndex);
         
-        // Set as the last movie
-        this.lastMovie = randomMovie;
-        
         System.out.println("Selected random initial movie: " + randomMovie.getTitle() + 
                            " with genres: " + randomMovie.getGenre());
+        
+        return randomMovie;
     }
     
     /**
@@ -161,6 +192,7 @@ public class GameService {
         // If player is blocked, don't clear block status immediately
         // This allows the frontend to see the blocked status, and the player will get an error when trying to select a movie
         else if (nextPlayer.isBlocked()) {
+            System.out.println("Player " + nextPlayer.getName() + " is blocked for this turn");
             // Don't immediately clear block status, let frontend detect it
             // Block status will be checked when player tries to select a movie, or cleared next time nextPlayer is called
         }
@@ -175,65 +207,30 @@ public class GameService {
     }
     
     /**
-     * Process movie selection
+     * Process movie selection for the current player
+     * 
+     * @param movieId The ID of the movie to select
+     * @return true if the selection was successful, false if the movie doesn't exist
      */
     public boolean processMovieSelection(int movieId) {
-        // check turn time out
-        if (isTurnTimeOut()) {
-            // If turn time out, set the opponent as winner
-            int opponentIndex = (currentPlayerIndex + 1) % players.size();
-            winner = players.get(opponentIndex);
-            gameOver = true;
-            return false;
-        }
-        
+        // Get the movie by ID
         Movie movie = movieService.getMovieById(movieId);
         if (movie == null) {
             return false;
         }
         
         Client currentPlayer = getCurrentPlayer();
-        if (currentPlayer == null) {
-            return false;
-        }
         
-        // Check if player is blocked
-        if (currentPlayer.isBlocked()) {
-            // Clear block status, but return false to indicate selection failed
-            clientService.clearBlock(currentPlayer);
-            return false;
-        }
-        
-        // Check if player has already selected a movie this turn
-        if (currentPlayer.hasSelectedMovie()) {
-            return false;
-        }
-        
-        // Check if movie has already been used
-        if (clientService.hasUsedMovie(currentPlayer, movieId)) {
-            return false;
-        }
-        
-        // Check if movie is connected to previous movie
-        if (lastMovie != null && !movieService.areMoviesConnected(movie, lastMovie)) {
-            return false;
-        }
-        
-        // Add movie to player's collection
+        // Update game state
         clientService.addMovieToClient(currentPlayer, movie);
-        lastMovie = movie;
-        
-        // Mark player as having selected a movie this turn
         currentPlayer.selectMovie();
         
-        // check win condition
+        // Check win condition
         if (clientService.checkWinCondition(currentPlayer)) {
             gameOver = true;
             winner = currentPlayer;
-            return true;
         }
         
-        // no longer automatically switch to next player, frontend will call nextPlayer API
         return true;
     }
     
@@ -312,13 +309,6 @@ public class GameService {
      */
     public int getTurnCount() {
         return turnCount;
-    }
-    
-    /**
-     * Get last selected movie
-     */
-    public Movie getLastMovie() {
-        return lastMovie;
     }
     
     /**
