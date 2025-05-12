@@ -40,13 +40,21 @@ public class MovieIndexer {
         }
     }
 
-    // Search movies
-    public List<Movie> searchMovies(String prefix) {
+    // Index a single movie
+    public void indexMovie(Movie movie) {
+        if (movie != null) {
+            autocomplete.insert(movie);
+            movieService.addMovie(movie);
+        }
+    }
+
+    // Search movies by prefix
+    public List<Movie> searchByPrefix(String prefix) {
         return autocomplete.search(prefix);
     }
 
-    // Search movies with limit
-    public List<Movie> searchMovies(String prefix, int limit) {
+    // Search movies by prefix with limit
+    public List<Movie> searchByPrefix(String prefix, int limit) {
         return autocomplete.search(prefix, limit);
     }
 

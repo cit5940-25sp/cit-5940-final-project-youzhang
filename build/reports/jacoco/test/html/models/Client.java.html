@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Client.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cit-5940-final-project-youzhang</a> &gt; <a href="index.source.html" class="el_package">models</a> &gt; <span class="el_source">Client.java</span></div><h1>Client.java</h1><pre class="source lang-java linenums">package models;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class Client {
+    // === Attributes ===
+    private final String name;
+    private final String winGenre; // The genre the player is trying to collect
+    private final int winThreshold; // How many movies of that genre are required to win
+
+    private final Set&lt;Integer&gt; usedMovies; // Prevents movie reuse
+    private final Map&lt;String, Integer&gt; genreCount; // Tracks how many times a genre has been played
+    private final List&lt;Movie&gt; movieCollection; // Stores the player's collected movies
+
+    private boolean hasBlocked; // Tracks whether block power-up was used
+    private boolean isSkipped;  // Flag to indicate if player loses next turn
+    private boolean isBlocked;  // Flag to indicate if player is blocked
+    private boolean hasSelectedMovie; // Flag to indicate if player has already selected a movie in current turn
+
+    // === Constructor ===
+<span class="nc" id="L26">    public Client(String name, String winGenre, int winThreshold) {</span>
+<span class="nc" id="L27">        this.name = name;</span>
+<span class="nc" id="L28">        this.winGenre = winGenre.toLowerCase();</span>
+<span class="nc" id="L29">        this.winThreshold = winThreshold;</span>
+<span class="nc" id="L30">        this.usedMovies = new HashSet&lt;&gt;();</span>
+<span class="nc" id="L31">        this.genreCount = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L32">        this.movieCollection = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L33">        this.hasBlocked = false;</span>
+<span class="nc" id="L34">        this.isSkipped = false;</span>
+<span class="nc" id="L35">        this.isBlocked = false;</span>
+<span class="nc" id="L36">        this.hasSelectedMovie = false;</span>
+<span class="nc" id="L37">    }</span>
+
+    // === Getters ===
+    public String getName() {
+<span class="nc" id="L41">        return name;</span>
+    }
+    
+    public String getWinGenre() {
+<span class="nc" id="L45">        return winGenre;</span>
+    }
+    
+    /**
+     * Get target genre (for frontend API)
+     */
+    public String getTargetGenre() {
+<span class="nc" id="L52">        return winGenre;</span>
+    }
+    
+    public int getWinThreshold() {
+<span class="nc" id="L56">        return winThreshold;</span>
+    }
+    
+    public Map&lt;String, Integer&gt; getGenreCount() {
+<span class="nc" id="L60">        return new HashMap&lt;&gt;(genreCount);</span>
+    }
+
+    /**
+     * Get the player's collected movies
+     */
+    public List&lt;Movie&gt; getMovies() {
+<span class="nc" id="L67">        return new ArrayList&lt;&gt;(movieCollection);</span>
+    }
+    
+    /**
+     * Check if skip ability is available
+     */
+    public boolean isSkipAvailable() {
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        return !hasBlocked;</span>
+    }
+    
+    /**
+     * Check if block ability is available
+     */
+    public boolean isBlockAvailable() {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        return !hasBlocked;</span>
+    }
+
+    /**
+     * Check if player has used a specific movie
+     */
+    public boolean hasUsedMovie(int movieId) {
+<span class="nc" id="L88">        return usedMovies.contains(movieId);</span>
+    }
+
+    public boolean isSkipped() {
+<span class="nc" id="L92">        return isSkipped;</span>
+    }
+
+    public boolean hasBlocked() {
+<span class="nc" id="L96">        return hasBlocked;</span>
+    }
+
+    public boolean isBlocked() {
+<span class="nc" id="L100">        return isBlocked;</span>
+    }
+
+    public boolean hasSelectedMovie() {
+<span class="nc" id="L104">        return hasSelectedMovie;</span>
+    }
+
+    // === Functional Methods ===
+
+    /**
+     * Add a movie to the player's collection
+     */
+    public void addMovie(Movie movie) {
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        if (movie == null) {</span>
+<span class="nc" id="L114">            return;</span>
+        }
+        
+<span class="nc" id="L117">        int movieId = movie.getId();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (usedMovies.contains(movieId)) {</span>
+<span class="nc" id="L119">            return; // Movie already used</span>
+        }
+        
+<span class="nc" id="L122">        usedMovies.add(movieId);</span>
+<span class="nc" id="L123">        movieCollection.add(movie); // Add movie object to collection</span>
+        
+        // Update genre counts
+<span class="nc" id="L126">        Set&lt;String&gt; genres = movie.getGenre();</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (genres != null) {</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">            for (String genre : genres) {</span>
+<span class="nc" id="L129">                String lowerGenre = genre.toLowerCase();</span>
+<span class="nc" id="L130">                int count = genreCount.getOrDefault(lowerGenre, 0);</span>
+<span class="nc" id="L131">                genreCount.put(lowerGenre, count + 1);</span>
+<span class="nc" id="L132">            }</span>
+        }
+<span class="nc" id="L134">    }</span>
+
+    /**
+     * Check if player has met win condition
+     */
+    public boolean hasMetWinCondition() {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        return genreCount.getOrDefault(winGenre, 0) &gt;= winThreshold;</span>
+    }
+
+    /**
+     * Activate skip status
+     */
+    public void activateSkip() {
+<span class="nc" id="L147">        isSkipped = true;</span>
+<span class="nc" id="L148">    }</span>
+
+    /**
+     * Clear skip status
+     */
+    public void clearSkip() {
+<span class="nc" id="L154">        isSkipped = false;</span>
+<span class="nc" id="L155">    }</span>
+
+    /**
+     * Activate block status
+     */
+    public void activateBlock() {
+<span class="nc" id="L161">        isBlocked = true;</span>
+<span class="nc" id="L162">    }</span>
+
+    /**
+     * Clear block status
+     */
+    public void clearBlock() {
+<span class="nc" id="L168">        isBlocked = false;</span>
+<span class="nc" id="L169">    }</span>
+
+    /**
+     * Mark player as having used their block/skip ability
+     */
+    public void useBlock() {
+<span class="nc" id="L175">        hasBlocked = true;</span>
+<span class="nc" id="L176">    }</span>
+
+    public void selectMovie() {
+<span class="nc" id="L179">        hasSelectedMovie = true;</span>
+<span class="nc" id="L180">    }</span>
+
+    public void clearSelectedMovie() {
+<span class="nc" id="L183">        hasSelectedMovie = false;</span>
+<span class="nc" id="L184">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L188">        return name + &quot; | Genre Goal: &quot; + winGenre + &quot; (&quot; +</span>
+<span class="nc" id="L189">                genreCount.getOrDefault(winGenre, 0) + &quot;/&quot; + winThreshold + &quot;)&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

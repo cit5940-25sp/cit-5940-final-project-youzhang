@@ -2,6 +2,7 @@ package utils;
 
 import models.Movie;
 import models.Tuple;
+import models.Autocomplete;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -103,5 +104,19 @@ public class AutocompleteTest {
         // The Matrix should come before The Matrix Reloaded due to length
         assertEquals("First result should be The Matrix", testMovie1, results.get(0));
         assertEquals("Second result should be The Matrix Reloaded", testMovie2, results.get(1));
+    }
+
+    @Test
+    public void testInsertNullMovie() {
+        autocomplete.insert(null);
+        List<Movie> results = autocomplete.search("");
+        assertEquals("Should not add null movie", 0, results.size());
+    }
+
+    @Test
+    public void testSearchNullPrefix() {
+        autocomplete.insert(testMovie1);
+        List<Movie> results = autocomplete.search(null);
+        assertTrue("Should return empty list for null prefix", results.isEmpty());
     }
 } 

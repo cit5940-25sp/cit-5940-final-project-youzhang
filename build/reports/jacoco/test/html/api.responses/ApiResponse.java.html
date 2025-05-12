@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ApiResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cit-5940-final-project-youzhang</a> &gt; <a href="index.source.html" class="el_package">api.responses</a> &gt; <span class="el_source">ApiResponse.java</span></div><h1>ApiResponse.java</h1><pre class="source lang-java linenums">package api.responses;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * API response base class, used for standardizing response format
+ */
+public class ApiResponse {
+    private int code;
+    private String message;
+    private Object data;
+    
+    /**
+     * Constructor
+     */
+<span class="nc" id="L17">    public ApiResponse(int code, String message, Object data) {</span>
+<span class="nc" id="L18">        this.code = code;</span>
+<span class="nc" id="L19">        this.message = message;</span>
+<span class="nc" id="L20">        this.data = data;</span>
+<span class="nc" id="L21">    }</span>
+    
+    /**
+     * Create success response
+     */
+    public static ApiResponse success(Object data) {
+<span class="nc" id="L27">        return new ApiResponse(200, &quot;success&quot;, data);</span>
+    }
+    
+    /**
+     * Create success response (no data)
+     */
+    public static ApiResponse success() {
+<span class="nc" id="L34">        return new ApiResponse(200, &quot;success&quot;, null);</span>
+    }
+    
+    /**
+     * Create error response
+     */
+    public static ApiResponse error(int code, String message) {
+<span class="nc" id="L41">        return new ApiResponse(code, message, null);</span>
+    }
+    
+    /**
+     * Convert response to JSON string
+     */
+    public String toJson() {
+<span class="nc" id="L48">        StringBuilder json = new StringBuilder();</span>
+<span class="nc" id="L49">        json.append(&quot;{&quot;);</span>
+<span class="nc" id="L50">        json.append(&quot;\&quot;code\&quot;:&quot;).append(code).append(&quot;,&quot;);</span>
+<span class="nc" id="L51">        json.append(&quot;\&quot;message\&quot;:\&quot;&quot;).append(message).append(&quot;\&quot;,&quot;);</span>
+<span class="nc" id="L52">        json.append(&quot;\&quot;data\&quot;:&quot;);</span>
+        
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (data == null) {</span>
+<span class="nc" id="L55">            json.append(&quot;null&quot;);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        } else if (data instanceof Map) {</span>
+            @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L58">            Map&lt;String, Object&gt; dataMap = (Map&lt;String, Object&gt;) data;</span>
+<span class="nc" id="L59">            json.append(mapToJson(dataMap));</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        } else if (data instanceof List) {</span>
+<span class="nc" id="L61">            json.append(listToJson((List&lt;?&gt;) data));</span>
+        } else {
+<span class="nc" id="L63">            json.append(&quot;\&quot;&quot;).append(data.toString()).append(&quot;\&quot;&quot;);</span>
+        }
+        
+<span class="nc" id="L66">        json.append(&quot;}&quot;);</span>
+<span class="nc" id="L67">        return json.toString();</span>
+    }
+    
+    /**
+     * Convert Map to JSON string
+     */
+    private String mapToJson(Map&lt;String, Object&gt; map) {
+<span class="nc bnc" id="L74" title="All 4 branches missed.">        if (map == null || map.isEmpty()) {</span>
+<span class="nc" id="L75">            return &quot;{}&quot;;</span>
+        }
+        
+<span class="nc" id="L78">        StringBuilder json = new StringBuilder();</span>
+<span class="nc" id="L79">        json.append(&quot;{&quot;);</span>
+        
+<span class="nc" id="L81">        boolean first = true;</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">        for (Map.Entry&lt;String, Object&gt; entry : map.entrySet()) {</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">            if (!first) {</span>
+<span class="nc" id="L84">                json.append(&quot;,&quot;);</span>
+            }
+<span class="nc" id="L86">            first = false;</span>
+            
+<span class="nc" id="L88">            json.append(&quot;\&quot;&quot;).append(entry.getKey()).append(&quot;\&quot;:&quot;);</span>
+            
+<span class="nc" id="L90">            Object value = entry.getValue();</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (value == null) {</span>
+<span class="nc" id="L92">                json.append(&quot;null&quot;);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">            } else if (value instanceof String) {</span>
+<span class="nc" id="L94">                json.append(&quot;\&quot;&quot;).append(value).append(&quot;\&quot;&quot;);</span>
+<span class="nc bnc" id="L95" title="All 4 branches missed.">            } else if (value instanceof Number || value instanceof Boolean) {</span>
+<span class="nc" id="L96">                json.append(value);</span>
+<span class="nc bnc" id="L97" title="All 2 branches missed.">            } else if (value instanceof Map) {</span>
+                @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L99">                Map&lt;String, Object&gt; valueMap = (Map&lt;String, Object&gt;) value;</span>
+<span class="nc" id="L100">                json.append(mapToJson(valueMap));</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            } else if (value instanceof List) {</span>
+<span class="nc" id="L102">                json.append(listToJson((List&lt;?&gt;) value));</span>
+            } else {
+<span class="nc" id="L104">                json.append(&quot;\&quot;&quot;).append(value.toString()).append(&quot;\&quot;&quot;);</span>
+            }
+<span class="nc" id="L106">        }</span>
+        
+<span class="nc" id="L108">        json.append(&quot;}&quot;);</span>
+<span class="nc" id="L109">        return json.toString();</span>
+    }
+    
+    /**
+     * Convert List to JSON string
+     */
+    private String listToJson(List&lt;?&gt; list) {
+<span class="nc bnc" id="L116" title="All 4 branches missed.">        if (list == null || list.isEmpty()) {</span>
+<span class="nc" id="L117">            return &quot;[]&quot;;</span>
+        }
+        
+<span class="nc" id="L120">        StringBuilder json = new StringBuilder();</span>
+<span class="nc" id="L121">        json.append(&quot;[&quot;);</span>
+        
+<span class="nc" id="L123">        boolean first = true;</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        for (Object item : list) {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            if (!first) {</span>
+<span class="nc" id="L126">                json.append(&quot;,&quot;);</span>
+            }
+<span class="nc" id="L128">            first = false;</span>
+            
+<span class="nc bnc" id="L130" title="All 2 branches missed.">            if (item == null) {</span>
+<span class="nc" id="L131">                json.append(&quot;null&quot;);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">            } else if (item instanceof String) {</span>
+<span class="nc" id="L133">                json.append(&quot;\&quot;&quot;).append(item).append(&quot;\&quot;&quot;);</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">            } else if (item instanceof Number || item instanceof Boolean) {</span>
+<span class="nc" id="L135">                json.append(item);</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">            } else if (item instanceof Map) {</span>
+                @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L138">                Map&lt;String, Object&gt; itemMap = (Map&lt;String, Object&gt;) item;</span>
+<span class="nc" id="L139">                json.append(mapToJson(itemMap));</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">            } else if (item instanceof List) {</span>
+<span class="nc" id="L141">                json.append(listToJson((List&lt;?&gt;) item));</span>
+            } else {
+<span class="nc" id="L143">                json.append(&quot;\&quot;&quot;).append(item.toString()).append(&quot;\&quot;&quot;);</span>
+            }
+<span class="nc" id="L145">        }</span>
+        
+<span class="nc" id="L147">        json.append(&quot;]&quot;);</span>
+<span class="nc" id="L148">        return json.toString();</span>
+    }
+    
+    // Getters
+    public int getCode() {
+<span class="nc" id="L153">        return code;</span>
+    }
+    
+    public String getMessage() {
+<span class="nc" id="L157">        return message;</span>
+    }
+    
+    public Object getData() {
+<span class="nc" id="L161">        return data;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

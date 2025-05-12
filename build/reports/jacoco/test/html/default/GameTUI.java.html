@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameTUI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cit-5940-final-project-youzhang</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">GameTUI.java</span></div><h1>GameTUI.java</h1><pre class="source lang-java linenums">import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+/**
+ * A simple Text User Interface (TUI) for the Movie Connection Game
+ */
+<span class="nc" id="L20">public class GameTUI {</span>
+    private static final String API_BASE_URL = &quot;http://localhost:8080/api&quot;;
+<span class="nc" id="L22">    private static final Scanner scanner = new Scanner(System.in);</span>
+<span class="nc" id="L23">    private static final JSONParser jsonParser = new JSONParser();</span>
+    
+    private static String player1Name;
+    private static String player1Genre;
+    private static String player2Name;
+    private static String player2Genre;
+<span class="nc" id="L29">    private static int winThreshold = 3;</span>
+<span class="nc" id="L30">    private static boolean gameStarted = false;</span>
+<span class="nc" id="L31">    private static int currentPlayerIndex = 0;</span>
+<span class="nc" id="L32">    private static String lastMovieTitle = &quot;&quot;;</span>
+    
+    public static void main(String[] args) {
+<span class="nc" id="L35">        System.out.println(&quot;=== Movie Connection Game TUI ===&quot;);</span>
+        
+        while (true) {
+<span class="nc" id="L38">            displayMenu();</span>
+<span class="nc" id="L39">            int choice = getUserChoice(1, 7);</span>
+            
+            try {
+<span class="nc bnc" id="L42" title="All 8 branches missed.">                switch (choice) {</span>
+                    case 1:
+<span class="nc" id="L44">                        setupGame();</span>
+<span class="nc" id="L45">                        break;</span>
+                    case 2:
+<span class="nc" id="L47">                        startGame();</span>
+<span class="nc" id="L48">                        break;</span>
+                    case 3:
+<span class="nc" id="L50">                        getGameStatus();</span>
+<span class="nc" id="L51">                        break;</span>
+                    case 4:
+<span class="nc" id="L53">                        searchAndSelectMovie();</span>
+<span class="nc" id="L54">                        break;</span>
+                    case 5:
+<span class="nc" id="L56">                        useAbility();</span>
+<span class="nc" id="L57">                        break;</span>
+                    case 6:
+<span class="nc" id="L59">                        nextPlayer();</span>
+<span class="nc" id="L60">                        break;</span>
+                    case 7:
+<span class="nc" id="L62">                        System.out.println(&quot;Exiting game. Goodbye!&quot;);</span>
+<span class="nc" id="L63">                        return;</span>
+                }
+<span class="nc" id="L65">            } catch (Exception e) {</span>
+<span class="nc" id="L66">                System.out.println(&quot;Error: &quot; + e.getMessage());</span>
+<span class="nc" id="L67">            }</span>
+            
+<span class="nc" id="L69">            System.out.println(&quot;\nPress Enter to continue...&quot;);</span>
+<span class="nc" id="L70">            scanner.nextLine();</span>
+<span class="nc" id="L71">        }</span>
+    }
+    
+    private static void displayMenu() {
+<span class="nc" id="L75">        System.out.println(&quot;\n=== Main Menu ===&quot;);</span>
+<span class="nc" id="L76">        System.out.println(&quot;1. Setup Game&quot;);</span>
+<span class="nc" id="L77">        System.out.println(&quot;2. Start Game&quot;);</span>
+<span class="nc" id="L78">        System.out.println(&quot;3. Get Game Status&quot;);</span>
+<span class="nc" id="L79">        System.out.println(&quot;4. Search and Select Movie&quot;);</span>
+<span class="nc" id="L80">        System.out.println(&quot;5. Use Ability (Skip/Block)&quot;);</span>
+<span class="nc" id="L81">        System.out.println(&quot;6. Next Player&quot;);</span>
+<span class="nc" id="L82">        System.out.println(&quot;7. Exit&quot;);</span>
+<span class="nc" id="L83">        System.out.print(&quot;Enter your choice (1-7): &quot;);</span>
+<span class="nc" id="L84">    }</span>
+    
+    private static int getUserChoice(int min, int max) {
+<span class="nc" id="L87">        int choice = -1;</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        while (choice &lt; min || choice &gt; max) {</span>
+            try {
+<span class="nc" id="L90">                choice = Integer.parseInt(scanner.nextLine());</span>
+<span class="nc bnc" id="L91" title="All 4 branches missed.">                if (choice &lt; min || choice &gt; max) {</span>
+<span class="nc" id="L92">                    System.out.print(&quot;Please enter a number between &quot; + min + &quot; and &quot; + max + &quot;: &quot;);</span>
+                }
+<span class="nc" id="L94">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L95">                System.out.print(&quot;Please enter a valid number: &quot;);</span>
+<span class="nc" id="L96">            }</span>
+        }
+<span class="nc" id="L98">        return choice;</span>
+    }
+    
+    private static void setupGame() {
+<span class="nc" id="L102">        System.out.println(&quot;\n=== Game Setup ===&quot;);</span>
+        
+<span class="nc" id="L104">        System.out.print(&quot;Enter Player 1 name: &quot;);</span>
+<span class="nc" id="L105">        player1Name = scanner.nextLine();</span>
+        
+<span class="nc" id="L107">        System.out.print(&quot;Enter Player 1 target genre (e.g., action, comedy, drama): &quot;);</span>
+<span class="nc" id="L108">        player1Genre = scanner.nextLine();</span>
+        
+<span class="nc" id="L110">        System.out.print(&quot;Enter Player 2 name: &quot;);</span>
+<span class="nc" id="L111">        player2Name = scanner.nextLine();</span>
+        
+<span class="nc" id="L113">        System.out.print(&quot;Enter Player 2 target genre (e.g., action, comedy, drama): &quot;);</span>
+<span class="nc" id="L114">        player2Genre = scanner.nextLine();</span>
+        
+<span class="nc" id="L116">        System.out.print(&quot;Enter win threshold (number of movies needed to win, default is 3): &quot;);</span>
+<span class="nc" id="L117">        String thresholdStr = scanner.nextLine();</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (!thresholdStr.isEmpty()) {</span>
+            try {
+<span class="nc" id="L120">                winThreshold = Integer.parseInt(thresholdStr);</span>
+<span class="nc" id="L121">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L122">                System.out.println(&quot;Invalid number, using default value of 3&quot;);</span>
+<span class="nc" id="L123">                winThreshold = 3;</span>
+<span class="nc" id="L124">            }</span>
+        }
+        
+<span class="nc" id="L127">        System.out.println(&quot;\nGame setup complete!&quot;);</span>
+<span class="nc" id="L128">        System.out.println(&quot;Player 1: &quot; + player1Name + &quot; (Target: &quot; + player1Genre + &quot;)&quot;);</span>
+<span class="nc" id="L129">        System.out.println(&quot;Player 2: &quot; + player2Name + &quot; (Target: &quot; + player2Genre + &quot;)&quot;);</span>
+<span class="nc" id="L130">        System.out.println(&quot;Win Threshold: &quot; + winThreshold);</span>
+<span class="nc" id="L131">    }</span>
+    
+    private static void startGame() throws IOException, ParseException {
+<span class="nc bnc" id="L134" title="All 8 branches missed.">        if (player1Name == null || player1Genre == null || player2Name == null || player2Genre == null) {</span>
+<span class="nc" id="L135">            System.out.println(&quot;Please setup the game first (option 1)&quot;);</span>
+<span class="nc" id="L136">            return;</span>
+        }
+        
+<span class="nc" id="L139">        System.out.println(&quot;\n=== Starting Game ===&quot;);</span>
+        
+<span class="nc" id="L141">        String endpoint = &quot;/game/start&quot;;</span>
+<span class="nc" id="L142">        String requestBody = String.format(</span>
+            &quot;{\&quot;player1Name\&quot;:\&quot;%s\&quot;,\&quot;player1Genre\&quot;:\&quot;%s\&quot;,\&quot;player2Name\&quot;:\&quot;%s\&quot;,\&quot;player2Genre\&quot;:\&quot;%s\&quot;,\&quot;winThreshold\&quot;:%d}&quot;,
+<span class="nc" id="L144">            player1Name, player1Genre, player2Name, player2Genre, winThreshold</span>
+        );
+        
+        try {
+<span class="nc" id="L148">            JSONObject response = sendPostRequest(endpoint, requestBody);</span>
+            
+<span class="nc bnc" id="L150" title="All 2 branches missed.">            if (response == null) {</span>
+<span class="nc" id="L151">                System.out.println(&quot;Error: No response from server&quot;);</span>
+<span class="nc" id="L152">                return;</span>
+            }
+            
+<span class="nc" id="L155">            Object codeObj = response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            if (codeObj == null) {</span>
+<span class="nc" id="L157">                System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L158">                return;</span>
+            }
+            
+<span class="nc" id="L161">            int code = ((Long) codeObj).intValue();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">            if (code == 200) {</span>
+<span class="nc" id="L163">                gameStarted = true;</span>
+<span class="nc" id="L164">                JSONObject data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L165" title="All 2 branches missed.">                if (data == null) {</span>
+<span class="nc" id="L166">                    System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L167">                    return;</span>
+                }
+                
+<span class="nc" id="L170">                Object currentPlayerIndexObj = data.get(&quot;currentPlayerIndex&quot;);</span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                if (currentPlayerIndexObj == null) {</span>
+<span class="nc" id="L172">                    System.out.println(&quot;Error: Missing current player index in server response&quot;);</span>
+<span class="nc" id="L173">                    return;</span>
+                }
+<span class="nc" id="L175">                currentPlayerIndex = ((Long) currentPlayerIndexObj).intValue();</span>
+                
+                // Get the first movie from the first player's movies
+<span class="nc" id="L178">                JSONArray players = (JSONArray) data.get(&quot;players&quot;);</span>
+<span class="nc bnc" id="L179" title="All 4 branches missed.">                if (players == null || players.isEmpty()) {</span>
+<span class="nc" id="L180">                    System.out.println(&quot;Error: No players in server response&quot;);</span>
+<span class="nc" id="L181">                    return;</span>
+                }
+                
+<span class="nc" id="L184">                JSONObject firstPlayer = (JSONObject) players.get(0);</span>
+<span class="nc" id="L185">                JSONArray movies = (JSONArray) firstPlayer.get(&quot;movies&quot;);</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">                if (movies == null || movies.isEmpty()) {</span>
+<span class="nc" id="L187">                    System.out.println(&quot;Error: No movies in server response&quot;);</span>
+<span class="nc" id="L188">                    return;</span>
+                }
+                
+<span class="nc" id="L191">                JSONObject firstMovie = (JSONObject) movies.get(0);</span>
+<span class="nc" id="L192">                Object titleObj = firstMovie.get(&quot;title&quot;);</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                if (titleObj == null) {</span>
+<span class="nc" id="L194">                    System.out.println(&quot;Error: Missing movie title in server response&quot;);</span>
+<span class="nc" id="L195">                    return;</span>
+                }
+<span class="nc" id="L197">                lastMovieTitle = (String) titleObj;</span>
+                
+<span class="nc" id="L199">                System.out.println(&quot;Game started successfully!&quot;);</span>
+<span class="nc" id="L200">                System.out.println(&quot;Initial movie: &quot; + lastMovieTitle);</span>
+<span class="nc" id="L201">                System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
+                
+                // Print player information
+<span class="nc" id="L204">                System.out.println(&quot;\nPlayer Information:&quot;);</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">                for (int i = 0; i &lt; players.size(); i++) {</span>
+<span class="nc" id="L206">                    JSONObject player = (JSONObject) players.get(i);</span>
+<span class="nc" id="L207">                    System.out.println(&quot;Player &quot; + (i + 1) + &quot;: &quot; + player.get(&quot;name&quot;) + </span>
+<span class="nc" id="L208">                                     &quot; (Target Genre: &quot; + player.get(&quot;targetGenre&quot;) + &quot;)&quot;);</span>
+                }
+<span class="nc" id="L210">            } else {</span>
+<span class="nc" id="L211">                String errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L212" title="All 2 branches missed.">                System.out.println(&quot;Failed to start game: &quot; + (errorMessage != null ? errorMessage : &quot;Unknown error&quot;));</span>
+            }
+<span class="nc" id="L214">        } catch (IOException e) {</span>
+<span class="nc" id="L215">            System.out.println(&quot;Error connecting to server: &quot; + e.getMessage());</span>
+<span class="nc" id="L216">            System.out.println(&quot;Make sure the server is running on port 8080&quot;);</span>
+<span class="nc" id="L217">        } catch (ParseException e) {</span>
+<span class="nc" id="L218">            System.out.println(&quot;Error parsing server response: &quot; + e.getMessage());</span>
+<span class="nc" id="L219">        } catch (Exception e) {</span>
+<span class="nc" id="L220">            System.out.println(&quot;Unexpected error: &quot; + e.getMessage());</span>
+<span class="nc" id="L221">            e.printStackTrace();</span>
+<span class="nc" id="L222">        }</span>
+<span class="nc" id="L223">    }</span>
+    
+    private static void getGameStatus() throws IOException, ParseException {
+<span class="nc bnc" id="L226" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L227">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L228">            return;</span>
+        }
+        
+<span class="nc" id="L231">        System.out.println(&quot;\n=== Game Status ===&quot;);</span>
+        
+<span class="nc" id="L233">        String endpoint = &quot;/game/status&quot;;</span>
+<span class="nc" id="L234">        JSONObject response = sendGetRequest(endpoint);</span>
+        
+<span class="nc" id="L236">        Object codeObj = response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (codeObj == null) {</span>
+<span class="nc" id="L238">            System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L239">            return;</span>
+        }
+        
+<span class="nc" id="L242">        int code = ((Long) codeObj).intValue();</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (code == 200) {</span>
+<span class="nc" id="L244">            JSONObject data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">            if (data == null) {</span>
+<span class="nc" id="L246">                System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L247">                return;</span>
+            }
+            
+<span class="nc" id="L250">            boolean gameOver = (boolean) data.get(&quot;gameOver&quot;);</span>
+<span class="nc" id="L251">            currentPlayerIndex = ((Long) data.get(&quot;currentPlayerIndex&quot;)).intValue();</span>
+            
+<span class="nc bnc" id="L253" title="All 2 branches missed.">            System.out.println(&quot;Game is &quot; + (gameOver ? &quot;over&quot; : &quot;in progress&quot;));</span>
+<span class="nc" id="L254">            System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
+            
+<span class="nc bnc" id="L256" title="All 2 branches missed.">            if (data.containsKey(&quot;lastMovie&quot;)) {</span>
+<span class="nc" id="L257">                JSONObject lastMovie = (JSONObject) data.get(&quot;lastMovie&quot;);</span>
+<span class="nc" id="L258">                lastMovieTitle = (String) lastMovie.get(&quot;title&quot;);</span>
+<span class="nc" id="L259">                System.out.println(&quot;Last movie: &quot; + lastMovieTitle);</span>
+            }
+            
+<span class="nc bnc" id="L262" title="All 4 branches missed.">            if (gameOver &amp;&amp; data.containsKey(&quot;winner&quot;)) {</span>
+<span class="nc" id="L263">                System.out.println(&quot;Winner: &quot; + data.get(&quot;winner&quot;));</span>
+            }
+            
+            // Check time
+<span class="nc" id="L267">            JSONObject timeResponse = sendGetRequest(&quot;/game/check-time&quot;);</span>
+<span class="nc" id="L268">            Object timeCodeObj = timeResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L269" title="All 4 branches missed.">            if (timeCodeObj != null &amp;&amp; ((Long) timeCodeObj).intValue() == 200) {</span>
+<span class="nc" id="L270">                JSONObject timeData = (JSONObject) timeResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">                if (timeData != null) {</span>
+<span class="nc" id="L272">                    long remainingTurnTime = (Long) timeData.get(&quot;remainingTurnTime&quot;);</span>
+<span class="nc" id="L273">                    System.out.println(&quot;Remaining turn time: &quot; + (remainingTurnTime / 1000) + &quot; seconds&quot;);</span>
+                }
+            }
+<span class="nc" id="L276">        } else {</span>
+<span class="nc" id="L277">            String errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">            System.out.println(&quot;Failed to get game status: &quot; + (errorMessage != null ? errorMessage : &quot;Unknown error&quot;));</span>
+        }
+<span class="nc" id="L280">    }</span>
+    
+    private static void searchAndSelectMovie() throws IOException, ParseException {
+<span class="nc bnc" id="L283" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L284">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L285">            return;</span>
+        }
+        
+<span class="nc" id="L288">        System.out.println(&quot;\n=== Search and Select Movie ===&quot;);</span>
+<span class="nc" id="L289">        System.out.println(&quot;Last movie: &quot; + lastMovieTitle);</span>
+<span class="nc" id="L290">        System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
+        
+<span class="nc" id="L292">        System.out.print(&quot;Enter search term: &quot;);</span>
+<span class="nc" id="L293">        String searchTerm = scanner.nextLine();</span>
+        
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (searchTerm.isEmpty()) {</span>
+<span class="nc" id="L296">            System.out.println(&quot;Search term cannot be empty&quot;);</span>
+<span class="nc" id="L297">            return;</span>
+        }
+        
+<span class="nc" id="L300">        String endpoint = &quot;/movies/search?term=&quot; + searchTerm + &quot;&amp;limit=10&quot;;</span>
+<span class="nc" id="L301">        JSONObject response = sendGetRequest(endpoint);</span>
+        
+<span class="nc" id="L303">        Object codeObj = response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L304" title="All 2 branches missed.">        if (codeObj == null) {</span>
+<span class="nc" id="L305">            System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L306">            return;</span>
+        }
+        
+<span class="nc" id="L309">        int code = ((Long) codeObj).intValue();</span>
+<span class="nc bnc" id="L310" title="All 2 branches missed.">        if (code == 200) {</span>
+<span class="nc" id="L311">            JSONObject data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L312" title="All 2 branches missed.">            if (data == null) {</span>
+<span class="nc" id="L313">                System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L314">                return;</span>
+            }
+            
+<span class="nc" id="L317">            JSONArray movies = (JSONArray) data.get(&quot;movies&quot;);</span>
+<span class="nc bnc" id="L318" title="All 4 branches missed.">            if (movies == null || movies.isEmpty()) {</span>
+<span class="nc" id="L319">                System.out.println(&quot;No movies found matching '&quot; + searchTerm + &quot;'&quot;);</span>
+<span class="nc" id="L320">                return;</span>
+            }
+            
+<span class="nc" id="L323">            System.out.println(&quot;\nSearch results:&quot;);</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">            for (int i = 0; i &lt; movies.size(); i++) {</span>
+<span class="nc" id="L325">                JSONObject movie = (JSONObject) movies.get(i);</span>
+<span class="nc" id="L326">                System.out.printf(&quot;%d. %s (%d)\n&quot;, i + 1, movie.get(&quot;title&quot;), movie.get(&quot;year&quot;));</span>
+            }
+            
+<span class="nc" id="L329">            System.out.print(&quot;\nSelect a movie (1-&quot; + movies.size() + &quot;) or 0 to cancel: &quot;);</span>
+<span class="nc" id="L330">            int selection = getUserChoice(0, movies.size());</span>
+            
+<span class="nc bnc" id="L332" title="All 2 branches missed.">            if (selection == 0) {</span>
+<span class="nc" id="L333">                System.out.println(&quot;Selection cancelled&quot;);</span>
+<span class="nc" id="L334">                return;</span>
+            }
+            
+<span class="nc" id="L337">            JSONObject selectedMovie = (JSONObject) movies.get(selection - 1);</span>
+<span class="nc" id="L338">            int movieId = ((Long) selectedMovie.get(&quot;id&quot;)).intValue();</span>
+            
+            // Select the movie
+<span class="nc" id="L341">            endpoint = &quot;/movies/select?id=&quot; + movieId;</span>
+<span class="nc" id="L342">            JSONObject selectResponse = sendPostRequest(endpoint, &quot;&quot;);</span>
+            
+<span class="nc" id="L344">            Object selectCodeObj = selectResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L345" title="All 2 branches missed.">            if (selectCodeObj == null) {</span>
+<span class="nc" id="L346">                System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L347">                return;</span>
+            }
+            
+<span class="nc" id="L350">            int selectCode = ((Long) selectCodeObj).intValue();</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">            if (selectCode == 200) {</span>
+<span class="nc" id="L352">                System.out.println(&quot;Movie selected successfully: &quot; + selectedMovie.get(&quot;title&quot;));</span>
+<span class="nc" id="L353">                lastMovieTitle = (String) selectedMovie.get(&quot;title&quot;);</span>
+            } else {
+<span class="nc" id="L355">                String errorMessage = (String) selectResponse.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L356" title="All 2 branches missed.">                System.out.println(&quot;Failed to select movie: &quot; + (errorMessage != null ? errorMessage : &quot;Unknown error&quot;));</span>
+            }
+<span class="nc" id="L358">        } else {</span>
+<span class="nc" id="L359">            String errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">            System.out.println(&quot;Failed to search movies: &quot; + (errorMessage != null ? errorMessage : &quot;Unknown error&quot;));</span>
+        }
+<span class="nc" id="L362">    }</span>
+    
+    private static void useAbility() throws IOException, ParseException {
+<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L366">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L367">            return;</span>
+        }
+        
+<span class="nc" id="L370">        System.out.println(&quot;\n=== Use Ability ===&quot;);</span>
+<span class="nc" id="L371">        System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
+        
+<span class="nc" id="L373">        System.out.println(&quot;1. Skip (skip opponent's next turn)&quot;);</span>
+<span class="nc" id="L374">        System.out.println(&quot;2. Block (block opponent's next move)&quot;);</span>
+<span class="nc" id="L375">        System.out.println(&quot;3. Cancel&quot;);</span>
+<span class="nc" id="L376">        System.out.print(&quot;Choose ability: &quot;);</span>
+        
+<span class="nc" id="L378">        int choice = getUserChoice(1, 3);</span>
+        
+<span class="nc bnc" id="L380" title="All 2 branches missed.">        if (choice == 3) {</span>
+<span class="nc" id="L381">            System.out.println(&quot;Cancelled&quot;);</span>
+<span class="nc" id="L382">            return;</span>
+        }
+        
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        String endpoint = choice == 1 ? &quot;/actions/skip&quot; : &quot;/actions/block&quot;;</span>
+<span class="nc" id="L386">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
+        
+<span class="nc bnc" id="L388" title="All 2 branches missed.">        if ((boolean) response.get(&quot;success&quot;)) {</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">            System.out.println(&quot;Ability used successfully: &quot; + (choice == 1 ? &quot;Skip&quot; : &quot;Block&quot;));</span>
+        } else {
+<span class="nc" id="L391">            System.out.println(&quot;Failed to use ability: &quot; + response.get(&quot;message&quot;));</span>
+        }
+<span class="nc" id="L393">    }</span>
+    
+    private static void nextPlayer() throws IOException, ParseException {
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L397">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L398">            return;</span>
+        }
+        
+<span class="nc" id="L401">        System.out.println(&quot;\n=== Next Player ===&quot;);</span>
+        
+<span class="nc" id="L403">        String endpoint = &quot;/actions/next&quot;;</span>
+<span class="nc" id="L404">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
+        
+<span class="nc" id="L406">        Object codeObj = response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L407" title="All 2 branches missed.">        if (codeObj == null) {</span>
+<span class="nc" id="L408">            System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L409">            return;</span>
+        }
+        
+<span class="nc" id="L412">        int code = ((Long) codeObj).intValue();</span>
+<span class="nc bnc" id="L413" title="All 2 branches missed.">        if (code == 200) {</span>
+<span class="nc" id="L414">            JSONObject data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L415" title="All 2 branches missed.">            if (data == null) {</span>
+<span class="nc" id="L416">                System.out.println(&quot;Error: Invalid response format from server&quot;);</span>
+<span class="nc" id="L417">                return;</span>
+            }
+            
+<span class="nc" id="L420">            currentPlayerIndex = ((Long) data.get(&quot;currentPlayerIndex&quot;)).intValue();</span>
+<span class="nc" id="L421">            System.out.println(&quot;Switched to next player: &quot; + getCurrentPlayerName());</span>
+<span class="nc" id="L422">        } else {</span>
+<span class="nc" id="L423">            String errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L424" title="All 2 branches missed.">            System.out.println(&quot;Failed to switch to next player: &quot; + (errorMessage != null ? errorMessage : &quot;Unknown error&quot;));</span>
+        }
+<span class="nc" id="L426">    }</span>
+    
+    private static String getCurrentPlayerName() {
+<span class="nc bnc" id="L429" title="All 2 branches missed.">        return currentPlayerIndex == 0 ? player1Name : player2Name;</span>
+    }
+    
+    private static JSONObject sendGetRequest(String endpoint) throws IOException, ParseException {
+<span class="nc" id="L433">        URL url = new URL(API_BASE_URL + endpoint);</span>
+<span class="nc" id="L434">        HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L435">        connection.setRequestMethod(&quot;GET&quot;);</span>
+        
+<span class="nc" id="L437">        return handleResponse(connection);</span>
+    }
+    
+    private static JSONObject sendPostRequest(String endpoint, String body) throws IOException, ParseException {
+<span class="nc" id="L441">        URL url = new URL(API_BASE_URL + endpoint);</span>
+<span class="nc" id="L442">        HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L443">        connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="nc" id="L444">        connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="nc" id="L445">        connection.setDoOutput(true);</span>
+        
+<span class="nc bnc" id="L447" title="All 4 branches missed.">        if (body != null &amp;&amp; !body.isEmpty()) {</span>
+<span class="nc" id="L448">            try (OutputStream os = connection.getOutputStream()) {</span>
+<span class="nc" id="L449">                byte[] input = body.getBytes(&quot;utf-8&quot;);</span>
+<span class="nc" id="L450">                os.write(input, 0, input.length);</span>
+            }
+        }
+        
+<span class="nc" id="L454">        return handleResponse(connection);</span>
+    }
+    
+    private static JSONObject handleResponse(HttpURLConnection connection) throws IOException, ParseException {
+<span class="nc" id="L458">        int responseCode = connection.getResponseCode();</span>
+<span class="nc" id="L459">        BufferedReader in = null;</span>
+        
+        try {
+<span class="nc bnc" id="L462" title="All 2 branches missed.">            if (responseCode == HttpURLConnection.HTTP_OK) {</span>
+<span class="nc" id="L463">                in = new BufferedReader(new InputStreamReader(connection.getInputStream()));</span>
+            } else {
+<span class="nc" id="L465">                in = new BufferedReader(new InputStreamReader(connection.getErrorStream()));</span>
+            }
+            
+<span class="nc" id="L468">            StringBuilder response = new StringBuilder();</span>
+            String inputLine;
+            
+<span class="nc bnc" id="L471" title="All 2 branches missed.">            while ((inputLine = in.readLine()) != null) {</span>
+<span class="nc" id="L472">                response.append(inputLine);</span>
+            }
+            
+<span class="nc" id="L475">            JSONObject jsonResponse = (JSONObject) jsonParser.parse(response.toString());</span>
+            
+<span class="nc bnc" id="L477" title="All 2 branches missed.">            if (responseCode != HttpURLConnection.HTTP_OK) {</span>
+<span class="nc" id="L478">                String message = (String) jsonResponse.get(&quot;message&quot;);</span>
+<span class="nc bnc" id="L479" title="All 2 branches missed.">                throw new IOException(message != null ? message : &quot;HTTP error code: &quot; + responseCode);</span>
+            }
+            
+<span class="nc" id="L482">            return jsonResponse;</span>
+        } finally {
+<span class="nc bnc" id="L484" title="All 2 branches missed.">            if (in != null) {</span>
+<span class="nc" id="L485">                in.close();</span>
+            }
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

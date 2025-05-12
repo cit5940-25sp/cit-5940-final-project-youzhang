@@ -43,8 +43,13 @@ public class DataLoader {
                 lineCount++;
                 try {
                     Movie movie = MovieCsvParser.parseMovieLine(line);
-                    movieService.addMovie(movie);
-                    successCount++;
+                    if (movie != null) {
+                        movieService.addMovie(movie);
+                        successCount++;
+                    } else {
+                        System.err.println("跳过第" + lineCount + "行: 无法解析电影数据");
+                        skipCount++;
+                    }
                 } catch (MovieCsvParser.MovieParseException e) {
                     // 只记录错误，不中断处理
                     System.err.println("跳过第" + lineCount + "行: " + e.getMessage());

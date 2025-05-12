@@ -23,7 +23,7 @@ public class MovieCsvParser {
      */
     public static Movie parseMovieLine(String line) throws MovieParseException {
         if (line == null || line.trim().isEmpty()) {
-            throw new MovieParseException("行内容为空");
+            return null;
         }
         
         try {
@@ -32,7 +32,7 @@ public class MovieCsvParser {
             
             // 确保有足够的列
             if (columns.size() < 6) {
-                throw new MovieParseException("行格式不正确，列数不足: " + line);
+                return null;
             }
             
             // 解析基本信息
@@ -63,7 +63,7 @@ public class MovieCsvParser {
             if (e instanceof MovieParseException) {
                 throw (MovieParseException) e;
             }
-            throw new MovieParseException("解析行时发生错误: " + e.getMessage(), e);
+            return null;
         }
     }
     

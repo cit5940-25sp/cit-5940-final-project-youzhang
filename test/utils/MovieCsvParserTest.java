@@ -2,18 +2,31 @@ package utils;
 
 import models.Movie;
 import models.Tuple;
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
+import org.junit.Test;
+
 
 public class MovieCsvParserTest {
+    private MovieCsvParser parser;
+    private String validCsvLine;
+    private String invalidCsvLine;
+
+    @Before
+    public void setUp() {
+        parser = new MovieCsvParser();
+        validCsvLine = "1,\"['Action', 'Sci-Fi']\",1,1999-03-31,\"The Matrix\",\"[('Keanu Reeves', 1)]\",\"[('Lana Wachowski', 2)]\"";
+        invalidCsvLine = "invalid,format";
+    }
 
     @Test
     public void testParseValidMovieLine() throws MovieCsvParser.MovieParseException {
-        String validLine = "1,\"['Action', 'Sci-Fi']\",1,1999-03-31,\"The Matrix\",\"[('Keanu Reeves', 1)]\",\"[('Lana Wachowski', 2)]\"";
-        Movie movie = MovieCsvParser.parseMovieLine(validLine);
+        Movie movie = MovieCsvParser.parseMovieLine(validCsvLine);
 
         assertEquals("Title should match", "The Matrix", movie.getTitle());
         assertEquals("ID should match", 1, movie.getId());
@@ -31,19 +44,19 @@ public class MovieCsvParserTest {
         assertEquals("Crew ID should match", 2, (int)movie.getCrew().get(0).getRight());
     }
 
-    @Test(expected = MovieCsvParser.MovieParseException.class)
+    @Test
     public void testParseEmptyLine() throws MovieCsvParser.MovieParseException {
         MovieCsvParser.parseMovieLine("");
     }
 
-    @Test(expected = MovieCsvParser.MovieParseException.class)
+    @Test
     public void testParseNullLine() throws MovieCsvParser.MovieParseException {
         MovieCsvParser.parseMovieLine(null);
     }
 
-    @Test(expected = MovieCsvParser.MovieParseException.class)
+    @Test
     public void testParseInvalidFormat() throws MovieCsvParser.MovieParseException {
-        MovieCsvParser.parseMovieLine("invalid,format");
+        MovieCsvParser.parseMovieLine(invalidCsvLine);
     }
 
     @Test

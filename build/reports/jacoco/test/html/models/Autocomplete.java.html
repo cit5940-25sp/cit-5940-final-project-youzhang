@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Autocomplete.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cit-5940-final-project-youzhang</a> &gt; <a href="index.source.html" class="el_package">models</a> &gt; <span class="el_source">Autocomplete.java</span></div><h1>Autocomplete.java</h1><pre class="source lang-java linenums">package models;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Comparator;
+import models.Movie;
+
+public class Autocomplete {
+    // Trie 节点类
+    private static class TrieNode {
+        private Map&lt;Character, TrieNode&gt; children;
+        private boolean isEndOfWord;
+        private Movie movie;
+
+<span class="nc" id="L17">        public TrieNode() {</span>
+<span class="nc" id="L18">            children = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L19">            isEndOfWord = false;</span>
+<span class="nc" id="L20">            movie = null;</span>
+<span class="nc" id="L21">        }</span>
+    }
+
+    private TrieNode root;
+    private int totalMovies;
+
+<span class="nc" id="L27">    public Autocomplete() {</span>
+<span class="nc" id="L28">        root = new TrieNode();</span>
+<span class="nc" id="L29">        totalMovies = 0;</span>
+<span class="nc" id="L30">    }</span>
+
+    // 插入电影到 Trie
+    public void insert(Movie movie) {
+<span class="nc bnc" id="L34" title="All 4 branches missed.">        if (movie == null || movie.getTitle() == null) {</span>
+<span class="nc" id="L35">            System.out.println(&quot;Warning: Attempted to insert null movie or movie with null title&quot;);</span>
+<span class="nc" id="L36">            return;</span>
+        }
+
+<span class="nc" id="L39">        TrieNode current = root;</span>
+<span class="nc" id="L40">        String lowerTitle = movie.getTitle().toLowerCase();</span>
+        
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        for (int i = 0; i &lt; lowerTitle.length(); i++) {</span>
+<span class="nc" id="L43">            char c = lowerTitle.charAt(i);</span>
+            
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (!current.children.containsKey(c)) {</span>
+<span class="nc" id="L46">                current.children.put(c, new TrieNode());</span>
+            }
+<span class="nc" id="L48">            current = current.children.get(c);</span>
+        }
+        
+<span class="nc" id="L51">        current.isEndOfWord = true;</span>
+<span class="nc" id="L52">        current.movie = movie;</span>
+<span class="nc" id="L53">        totalMovies++;</span>
+<span class="nc" id="L54">    }</span>
+
+    // 根据前缀搜索匹配的电影
+    public List&lt;Movie&gt; search(String prefix) {
+<span class="nc" id="L58">        return search(prefix, 10); // 默认返回10个结果</span>
+    }
+
+    // 根据前缀搜索匹配的电影，限制返回数量
+    public List&lt;Movie&gt; search(String prefix, int limit) {
+<span class="nc" id="L63">        List&lt;Movie&gt; results = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (prefix == null) {</span>
+<span class="nc" id="L66">            System.out.println(&quot;Warning: Search prefix is null&quot;);</span>
+<span class="nc" id="L67">            return results;</span>
+        }
+
+<span class="nc" id="L70">        System.out.println(&quot;Searching with prefix: '&quot; + prefix + &quot;', limit: &quot; + limit + &quot; (total movies in trie: &quot; + totalMovies + &quot;)&quot;);</span>
+        
+<span class="nc" id="L72">        TrieNode current = root;</span>
+<span class="nc" id="L73">        String lowerPrefix = prefix.toLowerCase().trim();</span>
+
+        // Handle empty prefix - return first N movies
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (lowerPrefix.isEmpty()) {</span>
+<span class="nc" id="L77">            System.out.println(&quot;Empty prefix - collecting all movies up to limit&quot;);</span>
+<span class="nc" id="L78">            collectMovies(root, results);</span>
+<span class="nc" id="L79">            results.sort(new MovieComparator(lowerPrefix));</span>
+<span class="nc" id="L80">            List&lt;Movie&gt; limitedResults = results.subList(0, Math.min(limit, results.size()));</span>
+<span class="nc" id="L81">            System.out.println(&quot;Returning &quot; + limitedResults.size() + &quot; results for empty prefix&quot;);</span>
+<span class="nc" id="L82">            return limitedResults;</span>
+        }
+
+        // Navigate to prefix node
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (int i = 0; i &lt; lowerPrefix.length(); i++) {</span>
+<span class="nc" id="L87">            char c = lowerPrefix.charAt(i);</span>
+            
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (!current.children.containsKey(c)) {</span>
+<span class="nc" id="L90">                System.out.println(&quot;No movies found with prefix '&quot; + prefix + &quot;' (stopped at character '&quot; + c + &quot;')&quot;);</span>
+<span class="nc" id="L91">                return results;</span>
+            }
+<span class="nc" id="L93">            current = current.children.get(c);</span>
+        }
+
+        // Collect all movies under this prefix
+<span class="nc" id="L97">        collectMovies(current, results);</span>
+        
+<span class="nc" id="L99">        System.out.println(&quot;Found &quot; + results.size() + &quot; movies with prefix '&quot; + prefix + &quot;' before sorting&quot;);</span>
+        
+        // Sort by relevance
+<span class="nc" id="L102">        results.sort(new MovieComparator(lowerPrefix));</span>
+<span class="nc" id="L103">        List&lt;Movie&gt; limitedResults = results.subList(0, Math.min(limit, results.size()));</span>
+        
+<span class="nc" id="L105">        System.out.println(&quot;Returning &quot; + limitedResults.size() + &quot; results after sorting and limiting&quot;);</span>
+<span class="nc" id="L106">        return limitedResults;</span>
+    }
+
+    // 递归收集所有可能的电影
+    private void collectMovies(TrieNode node, List&lt;Movie&gt; results) {
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (node == null) {</span>
+<span class="nc" id="L112">            return;</span>
+        }
+
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        if (node.isEndOfWord &amp;&amp; node.movie != null) {</span>
+<span class="nc" id="L116">            results.add(node.movie);</span>
+        }
+
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        for (TrieNode child : node.children.values()) {</span>
+<span class="nc" id="L120">            collectMovies(child, results);</span>
+<span class="nc" id="L121">        }</span>
+<span class="nc" id="L122">    }</span>
+
+    // 电影比较器，用于按匹配度排序
+    private static class MovieComparator implements Comparator&lt;Movie&gt; {
+        private final String prefix;
+
+<span class="nc" id="L128">        public MovieComparator(String prefix) {</span>
+<span class="nc" id="L129">            this.prefix = prefix.toLowerCase();</span>
+<span class="nc" id="L130">        }</span>
+
+        @Override
+        public int compare(Movie m1, Movie m2) {
+<span class="nc" id="L134">            String title1 = m1.getTitle().toLowerCase();</span>
+<span class="nc" id="L135">            String title2 = m2.getTitle().toLowerCase();</span>
+
+            // If one title starts with prefix and other doesn't, prioritize the matching one
+<span class="nc" id="L138">            boolean starts1 = title1.startsWith(prefix);</span>
+<span class="nc" id="L139">            boolean starts2 = title2.startsWith(prefix);</span>
+            
+<span class="nc bnc" id="L141" title="All 4 branches missed.">            if (starts1 &amp;&amp; !starts2) return -1;</span>
+<span class="nc bnc" id="L142" title="All 4 branches missed.">            if (!starts1 &amp;&amp; starts2) return 1;</span>
+
+            // If both match or don't match, compare by title length
+<span class="nc" id="L145">            int lengthDiff = title1.length() - title2.length();</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">            if (lengthDiff != 0) return lengthDiff;</span>
+
+            // If lengths are equal, sort alphabetically
+<span class="nc" id="L149">            return title1.compareTo(title2);</span>
+        }
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

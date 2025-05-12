@@ -112,6 +112,11 @@ public class GameService {
         // Set as the last movie
         this.lastMovie = randomMovie;
         
+        // Add the movie to the first player's collection
+        if (!players.isEmpty()) {
+            players.get(0).addMovie(randomMovie);
+        }
+        
         System.out.println("Selected random initial movie: " + randomMovie.getTitle() + 
                            " with genres: " + randomMovie.getGenre());
     }

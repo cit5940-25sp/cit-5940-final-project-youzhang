@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovieService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">cit-5940-final-project-youzhang</a> &gt; <a href="index.source.html" class="el_package">services</a> &gt; <span class="el_source">MovieService.java</span></div><h1>MovieService.java</h1><pre class="source lang-java linenums">package services;
+
+import models.Movie;
+import models.Tuple;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Service class, handles movie-related business logic
+ */
+<span class="fc" id="L14">public class MovieService {</span>
+<span class="fc" id="L15">    private final Map&lt;Integer, Movie&gt; movieCache = new HashMap&lt;&gt;();</span>
+    
+    /**
+     * Get movie by ID
+     */
+    public Movie getMovieById(int id) {
+<span class="nc" id="L21">        return movieCache.get(id);</span>
+    }
+    
+    /**
+     * Add movie to cache
+     */
+    public void addMovie(Movie movie) {
+<span class="fc" id="L28">        movieCache.put(movie.getId(), movie);</span>
+<span class="fc" id="L29">    }</span>
+    
+    /**
+     * Get all movies
+     */
+    public List&lt;Movie&gt; getAllMovies() {
+<span class="fc" id="L35">        return new ArrayList&lt;&gt;(movieCache.values());</span>
+    }
+    
+    /**
+     * Get movie cache
+     */
+    public Map&lt;Integer, Movie&gt; getMovieCache() {
+<span class="nc" id="L42">        return movieCache;</span>
+    }
+    
+    /**
+     * Search movies
+     */
+    public List&lt;Movie&gt; searchMovies(String query) {
+<span class="nc" id="L49">        query = query.toLowerCase();</span>
+<span class="nc" id="L50">        List&lt;Movie&gt; results = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (Movie movie : movieCache.values()) {</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            if (movie.getTitle().toLowerCase().contains(query)) {</span>
+<span class="nc" id="L54">                results.add(movie);</span>
+            }
+<span class="nc" id="L56">        }</span>
+        
+<span class="nc" id="L58">        return results;</span>
+    }
+    
+    /**
+     * Check if two movies are connected
+     */
+    public boolean areMoviesConnected(Movie movie1, Movie movie2) {
+<span class="nc bnc" id="L65" title="All 6 branches missed.">        return movie1 != null &amp;&amp; movie2 != null &amp;&amp; movie1.isConnectedTo(movie2);</span>
+    }
+    
+    /**
+     * Get connections between two movies (common cast or crew members)
+     */
+    public List&lt;String&gt; getMovieConnections(Movie movie1, Movie movie2) {
+<span class="nc" id="L72">        List&lt;String&gt; connections = new ArrayList&lt;&gt;();</span>
+        
+<span class="nc bnc" id="L74" title="All 4 branches missed.">        if (movie1 == null || movie2 == null) {</span>
+<span class="nc" id="L75">            return connections;</span>
+        }
+        
+        // Check common cast members
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        for (Tuple&lt;String, Integer&gt; cast1 : movie1.getCasts()) {</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            if (movie2.hasCast(cast1.getRight())) {</span>
+<span class="nc" id="L81">                connections.add(&quot;Actor: &quot; + cast1.getLeft());</span>
+            }
+<span class="nc" id="L83">        }</span>
+        
+        // Check common crew members
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        for (Tuple&lt;String, Integer&gt; crew1 : movie1.getCrew()) {</span>
+<span class="nc bnc" id="L87" title="All 2 branches missed.">            if (movie2.hasCrew(crew1.getRight())) {</span>
+<span class="nc" id="L88">                connections.add(&quot;Crew: &quot; + crew1.getLeft());</span>
+            }
+<span class="nc" id="L90">        }</span>
+        
+<span class="nc" id="L92">        return connections;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
