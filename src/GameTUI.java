@@ -23,6 +23,12 @@ public class GameTUI {
     private static final Scanner scanner = new Scanner(System.in);
     private static final JSONParser jsonParser = new JSONParser();
     
+    // 倒计时状态变量
+    private static int timerRemainingSeconds = 0;
+    private static boolean timerActive = false;
+    private static boolean timerExpired = false;
+    private static boolean movieSelected = false;
+    
     private static String player1Name;
     private static String player1Genre;
     private static String player2Name;
@@ -73,7 +79,13 @@ public class GameTUI {
     }
     
     private static void displayMenu() {
-        System.out.println("\n=== Main Menu ===");
+        System.out.println("\n===== Movie Connection Game =====\n");
+        
+        // 如果倒计时活跃，显示当前剩余时间
+        if (timerActive) {
+            System.out.println("⏰ TIMER: " + timerRemainingSeconds + " seconds remaining");
+        }
+        
         System.out.println("1. Setup Game");
         System.out.println("2. Start Game");
         System.out.println("3. Get Game Status");
@@ -81,7 +93,7 @@ public class GameTUI {
         System.out.println("5. Use Ability (Skip/Block)");
         System.out.println("6. Next Player");
         System.out.println("7. Exit");
-        System.out.print("Enter your choice (1-7): ");
+        System.out.print("\nEnter your choice (1-7): ");
     }
     
     private static int getUserChoice(int min, int max) {
@@ -347,32 +359,50 @@ public class GameTUI {
         }
         
         System.out.println("\n=== Search and Select Movie ===");
+        
+        // 初始化倒计时状态
+        timerRemainingSeconds = 30;
+        timerActive = true;
+        timerExpired = false;
+        movieSelected = false;
+        
         System.out.println("⏰ 30-SECOND COUNTDOWN STARTED! ⏰");
+        System.out.println("⏰ Time remaining: 30 seconds");
         
-        // Create and start countdown thread
-        final int[] remainingSeconds = {30};
-        final boolean[] timerExpired = {false};
-        final boolean[] movieSelected = {false};
-        
+        // 启动倒计时线程 - 在控制台显示倒计时，但不干扰用户输入
         Thread timerThread = new Thread(() -> {
             try {
-                while (remainingSeconds[0] > 0 && !movieSelected[0]) {
-                    Thread.sleep(1000); // Sleep for 1 second
-                    remainingSeconds[0]--;
-                    System.out.print("\r⏰ Time remaining: " + remainingSeconds[0] + " seconds ");
-                    System.out.flush();
+                // 创建一个专用于倒计时显示的区域
+                System.out.println("\n--- COUNTDOWN TIMER STARTED ---");
+                
+                while (timerRemainingSeconds > 0 && !movieSelected) {
+                    // 清晰地显示当前倒计时状态
+                    System.out.println("\n⏰ COUNTDOWN: " + timerRemainingSeconds + " seconds remaining");
                     
-                    if (remainingSeconds[0] <= 0) {
-                        timerExpired[0] = true;
-                        System.out.println("\n\n⏰ TIME'S UP! ⏰");
+                    // 特殊警告
+                    if (timerRemainingSeconds == 10) {
+                        System.out.println("⚠️ WARNING: Only 10 seconds remaining! ⚠️");
+                    }
+                    
+                    // 等待一秒
+                    Thread.sleep(1000);
+                    timerRemainingSeconds--;
+                    
+                    // 时间到期处理
+                    if (timerRemainingSeconds <= 0) {
+                        timerExpired = true;
+                        timerActive = false;
+                        
+                        // 显示时间到期信息
+                        System.out.println("\n⏰ TIME'S UP! ⏰");
                         System.out.println("You ran out of time to select a movie.");
                         System.out.println("Your opponent wins!");
                         
-                        // Get opponent name
+                        // 获取对手名称
                         String opponentName = (currentPlayerIndex == 0) ? player2Name : player1Name;
                         System.out.println("Winner: " + opponentName);
                         
-                        // Reset game state
+                        // 重置游戏状态
                         gameStarted = false;
                         currentPlayerIndex = 0;
                         lastMovieTitle = "";
@@ -381,12 +411,18 @@ public class GameTUI {
                         break;
                     }
                 }
+                
+                // 倒计时结束（正常或被中断）
+                if (!timerExpired && movieSelected) {
+                    System.out.println("\n--- COUNTDOWN STOPPED ---");
+                }
+                
             } catch (InterruptedException e) {
-                // Thread interrupted, possibly because a movie was selected
+                // 线程被中断
             }
         });
         
-        timerThread.setDaemon(true); // Set as daemon thread so it terminates when main program exits
+        timerThread.setDaemon(true); // 设置为守护线程
         timerThread.start();
         
         // Get game status to check if current player is blocked or has already selected a movie
@@ -507,17 +543,14 @@ public class GameTUI {
             return;
         }
         
-        // Check if countdown has expired
-        if (timerExpired[0]) {
-            return; // If countdown has expired, return immediately
+        // 检查倒计时是否已过期
+        if (timerExpired) {
+            return; // 如果倒计时已过期，立即返回
         }
         
-        // Check if countdown has expired again
-        if (timerExpired[0]) {
-            return; // If countdown has expired, return immediately
-        }
+        // 不再在这里显示剩余时间，因为倒计时线程会定期显示
         
-        System.out.print("\nEnter search term: ");
+        System.out.print("Enter search term: ");
         String searchTerm = scanner.nextLine();
         
         if (searchTerm.isEmpty()) {
@@ -525,9 +558,10 @@ public class GameTUI {
             return;
         }
         
-        // Check if countdown has expired
-        if (timerExpired[0]) {
-            return; // If countdown has expired, return immediately
+        // 再次检查倒计时是否已过期（输入后）
+        if (timerExpired) {
+            System.out.println("Sorry, time expired while you were typing.");
+            return;
         }
         
         String endpoint = "/movies/search?term=" + searchTerm + "&limit=10";
@@ -584,13 +618,14 @@ public class GameTUI {
             int movieId = ((Long) selectedMovie.get("id")).intValue();
             
             // Check if countdown has expired
-            if (timerExpired[0]) {
+            if (timerExpired) {
                 return; // If countdown has expired, return immediately
             }
             
-            // Mark movie as selected, stop the countdown
-            movieSelected[0] = true;
-            System.out.println("\n"); // Print a newline to avoid conflicts with countdown display
+            // 标记电影已选择，停止倒计时
+            movieSelected = true;
+            timerActive = false;
+            System.out.println("⏰ Timer stopped - movie selected successfully!");
             
             // Select the movie
             endpoint = "/movies/select?id=" + movieId;
