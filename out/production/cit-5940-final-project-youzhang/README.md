@@ -2,12 +2,14 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=18841678&assignment_repo_type=AssignmentRepo)
 # Movie Chain Game
 
-A web-based game where players take turns selecting movies that match specific genres. The game features a movie search functionality with autocomplete and power-ups like skip and block.
+A terminal-based game where players take turns selecting movies that are connected to each other. The game features movie search functionality and power-ups like skip and block.
+
+> **Note:** This is currently a demo version with basic functionality. A more comprehensive TUI (Text User Interface) is planned for future development.
 
 ## Prerequisites
 
 - Java 8 or higher
-- Python 3 (for serving static files)
+- JSON Simple library (included in the lib directory)
 
 ## Project Structure
 
@@ -17,54 +19,90 @@ A web-based game where players take turns selecting movies that match specific g
 │   ├── controllers/       # Game controllers
 │   ├── models/           # Data models
 │   ├── services/         # Business logic
-│   └── utils/            # Utility classes
-├── web/                   # Web interface files
-│   ├── css/              # Stylesheets
-│   └── js/               # JavaScript files
-└── target/               # Compiled Java classes
+│   ├── utils/            # Utility classes
+│   ├── GameServer.java   # Server entry point
+│   └── GameTUI.java      # Text User Interface
+├── test/                  # Test files
+├── lib/                   # External libraries
+└── bin/                   # Compiled Java classes
 ```
 
 ## How to Run
 
-1. First, compile the Java files:
+### Compile the Project
+
 ```bash
-javac -d target src/**/*.java
+# Compile the server and game logic
+javac -d bin src/**/*.java src/*.java
+
+# Compile the TUI (requires JSON Simple library)
+javac -cp .:lib/json-simple-1.1.1.jar src/GameTUI.java -d bin
 ```
 
-2. Start the game server:
+### Start the Game Server
+
 ```bash
-java -cp target GameServer
+java -cp bin GameServer
 ```
 
-3. Open your web browser and navigate to:
+### Start the TUI Client
+
+```bash
+java -cp bin:lib/json-simple-1.1.1.jar GameTUI
 ```
-http://localhost:8080
+
+## Running Tests
+
+The project includes comprehensive unit tests for various components. To run the tests:
+
+1. Compile the test files:
+```bash
+javac -cp ".:lib/*:src:test" test/utils/*.java
 ```
+
+2. Run all tests:
+```bash
+java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieIndexerTest utils.AutocompleteTest utils.MovieCsvParserTest utils.DataLoaderTest
+```
+
+3. To run a specific test class:
+```bash
+java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieCsvParserTest
+```
+
+The test suite includes tests for:
+- Movie CSV parsing
+- Movie indexing
+- Autocomplete functionality
+- Data loading
 
 ## Game Rules
 
 1. Each player is assigned a target genre
 2. Players take turns selecting movies
-3. Each movie must match the previous movie's genre
+3. Each movie must be connected to the previous movie (share cast or crew)
 4. Players can use power-ups:
-   - Skip: Skip your turn
-   - Block: Block the next player's turn
+   - Skip: Force the opponent to skip their next turn
+   - Block: Prevent the opponent from selecting a movie on their next turn
 5. First player to collect enough movies of their target genre wins
+6. If a player doesn't select a movie within 30 seconds, they lose the game
 
 ## Features
 
-- Real-time movie search with autocomplete
-- Genre-based movie selection
+- Movie search functionality
+- Connection-based movie selection
 - Power-ups for strategic gameplay
-- Responsive web interface
+- Text-based user interface
+- Turn-based gameplay with time limits
 - Detailed game status updates
 
 ## Development
 
 The game is built using:
-- Java for the backend server
-- HTML/CSS/JavaScript for the frontend
+- Java for both the backend server and TUI client
+- JSON Simple for API communication
 - Trie data structure for efficient movie search
+- Factory pattern for service management
 
 ## Backend Architecture
 
@@ -138,32 +176,43 @@ The backend is built using several design patterns to ensure a clean, maintainab
 4. **Win Condition**
    - First player to collect the specified number of movies in their target genre wins
 
-## Frontend Implementation
+## TUI Implementation
 
-The frontend is built using HTML, CSS, and vanilla JavaScript:
+The Text User Interface (TUI) is built using Java and provides a terminal-based way to interact with the game:
 
 1. **User Interface**
-   - Clean, responsive design
-   - Player boards showing collected movies
+   - Menu-driven interface for game actions
+   - Text-based display of game state
    - Search functionality for finding movies
-   - Special ability buttons
+   - Special ability options
    - Turn information and game status
 
-2. **JavaScript Architecture**
-   - Event-driven programming model
-   - Asynchronous API calls using fetch
-   - State management through the gameState object
-   - Dynamic UI updates based on game state
+2. **TUI Architecture**
+   - Command-based interaction model
+   - HTTP-based API communication using Java's HttpURLConnection
+   - JSON parsing for handling API responses
+   - State tracking through local variables
 
 3. **Key Features**
-   - Real-time UI updates
-   - Movie search with instant results
-   - Visual feedback for game actions
-   - Automatic genre matching and counting
-   - Responsive design for different screen sizes
+   - Movie search with results display
+   - Turn-based gameplay management
+   - Special ability usage
+   - Game status checking
+   - Timeout monitoring
 
 ## Technologies Used
 
 - **Backend**: Java, HttpServer
-- **Frontend**: HTML5, CSS3, JavaScript
+- **TUI Client**: Java, JSON Simple
 - **Data**: CSV file with movie information (4802 movies)
+- **Communication**: RESTful API over HTTP
+
+## Future Development
+
+This is currently a demo version with the following planned improvements:
+
+1. Enhanced TUI with more visual elements
+2. Better error handling and user feedback
+3. Offline mode with cached movie data
+4. Multiplayer over network
+5. AI opponents for single-player mode
