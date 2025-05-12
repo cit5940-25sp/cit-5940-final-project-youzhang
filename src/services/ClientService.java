@@ -70,4 +70,24 @@ public class ClientService {
     public boolean hasUsedMovie(Client client, int movieId) {
         return client.hasUsedMovie(movieId);
     }
+    
+    /**
+     * Add initial movie to player's collection without counting it towards genre counts
+     * This is a special method used only for the initial movie in the game
+     * 
+     * @param client The player to add the movie to
+     * @param movie The initial movie to add
+     */
+    public void addInitialMovieToClient(Client client, Movie movie) {
+        if (client == null || movie == null) {
+            return;
+        }
+        
+        // Add movie to client's collection
+        // Since we can't directly access private fields anymore, we'll use the addMovie method
+        // This will update genre counts, but for the initial movie it's acceptable
+        client.addInitialMovieToClient(movie);
+        
+        System.out.println("Added initial movie: " + movie.getTitle() + " to player: " + client.getName());
+    }
 }

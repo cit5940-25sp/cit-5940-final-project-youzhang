@@ -188,4 +188,15 @@ public class Client {
         return name + " | Genre Goal: " + winGenre + " (" +
                 genreCount.getOrDefault(winGenre, 0) + "/" + winThreshold + ")";
     }
+
+    public void addInitialMovieToClient(Movie movie) {
+        if (movie == null) {
+            return;
+        }
+
+        usedMovies.add(movie.getId());
+        movieCollection.add(movie);
+
+        return;
+    }
 }

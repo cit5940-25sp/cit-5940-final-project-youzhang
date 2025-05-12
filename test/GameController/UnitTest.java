@@ -1,5 +1,8 @@
 package test.GameController;
 
+import api.responses.ApiResponse;
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
 import controllers.GameController;
 import factories.ServiceFactory;
 import models.Client;
@@ -8,11 +11,18 @@ import models.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.After;
+import org.mockito.Mockito;
 import services.GameService;
 import services.MovieService;
 import utils.DataLoader;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,10 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.*;
-import java.util.List;
-import java.util.Set;
-
-
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for GameController
@@ -124,7 +131,10 @@ public class UnitTest {
         assertFalse("Game should not be over initially", gameService.isGameOver());
         assertEquals("Turn count should be 1", 1, gameService.getTurnCount());
         assertEquals("Current player index should be 0", 0, gameService.getCurrentPlayerIndex());
-        assertNotNull("Initial movie should be selected", gameService.getLastMovie());
+        // Check that current player has at least one movie (the initial movie)
+        Client currentPlayer = gameService.getCurrentPlayer();
+        assertNotNull("Current player should not be null", currentPlayer);
+        assertFalse("Current player should have at least one movie", currentPlayer.getMovies().isEmpty());
         assertNull("Winner should be null initially", gameService.getWinner());
     }
     
@@ -163,8 +173,11 @@ public class UnitTest {
         // Initialize game
         gameService.initGame(testPlayers);
         
-        // Get the initial movie (this will be the lastMovie after initialization)
-        Movie initialMovie = gameService.getLastMovie();
+        // Get the initial movie from the current player's collection
+        Client currentPlayer = gameService.getCurrentPlayer();
+        assertNotNull("Current player should not be null", currentPlayer);
+        assertFalse("Current player should have at least one movie", currentPlayer.getMovies().isEmpty());
+        Movie initialMovie = currentPlayer.getMovies().get(0);
         assertNotNull("Initial movie should not be null", initialMovie);
         
         // Find a movie that is connected to the initial movie
@@ -184,8 +197,11 @@ public class UnitTest {
             boolean selectionResult = gameService.processMovieSelection(connectedMovie.getId());
             assertTrue("Movie selection should succeed with connected movie", selectionResult);
             
-            // Verify the last movie is updated
-            Movie lastMovie = gameService.getLastMovie();
+            // Verify the player's movie collection is updated
+            currentPlayer = gameService.getCurrentPlayer();
+            assertNotNull("Current player should not be null", currentPlayer);
+            assertFalse("Current player should have movies", currentPlayer.getMovies().isEmpty());
+            Movie lastMovie = currentPlayer.getMovies().get(currentPlayer.getMovies().size() - 1);
             assertNotNull("Last movie should not be null after selection", lastMovie);
             assertEquals("Last movie should match selected movie", connectedMovie.getId(), lastMovie.getId());
         } else {
@@ -315,5 +331,241 @@ public class UnitTest {
         long remainingTime = gameService.getRemainingTurnTime();
         assertTrue("Remaining turn time should be positive", remainingTime > 0);
         assertTrue("Remaining turn time should be less than 30 seconds", remainingTime <= 30000);
+    }
+    
+    /**
+     * Test handle method routing
+     */
+    @Test
+    public void testHandleRouting() throws IOException, URISyntaxException {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock URI for different endpoints
+        when(mockExchange.getRequestURI()).thenReturn(new URI("/api/game/status"));
+        when(mockExchange.getRequestMethod()).thenReturn("GET");
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Initialize game for testing
+        gameService.initGame(testPlayers);
+        
+        // Call handle method
+        gameController.handle(mockExchange);
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+    }
+    
+    /**
+     * Test handleStartGame method
+     */
+    @Test
+    public void testHandleStartGame() throws Exception {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock request body
+        String requestBody = "{\"player1Name\":\"TestPlayer1\",\"player1Genre\":\"action\",\"player2Name\":\"TestPlayer2\",\"player2Genre\":\"comedy\",\"winThreshold\":3}";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(requestBody.getBytes());
+        when(mockExchange.getRequestBody()).thenReturn(inputStream);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleStartGame", HttpExchange.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange);
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+        
+        // Verify game was initialized and players have the initial movie
+        List<Client> players = gameService.getPlayers();
+        assertFalse("Players list should not be empty", players.isEmpty());
+        for (Client player : players) {
+            assertFalse("Player should have at least one movie", player.getMovies().isEmpty());
+        }
+    }
+    
+    /**
+     * Test handleGetGameStatus method
+     */
+    @Test
+    public void testHandleGetGameStatus() throws Exception {
+        // Initialize game
+        gameService.initGame(testPlayers);
+        
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleGetGameStatus", HttpExchange.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange);
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+        
+        // Verify response contains game status data
+        String response = responseBody.toString();
+        assertTrue("Response should contain game status data", response.contains("gameOver"));
+        assertTrue("Response should contain turn count", response.contains("turnCount"));
+    }
+    
+    /**
+     * Test handleCheckTime method
+     */
+    @Test
+    public void testHandleCheckTime() throws Exception {
+        // Initialize game
+        gameService.initGame(testPlayers);
+        
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleCheckTime", HttpExchange.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange);
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+        
+        // Verify response contains time data
+        String response = responseBody.toString();
+        assertTrue("Response should contain turn timeout data", response.contains("turnTimeOut"));
+        assertTrue("Response should contain remaining turn time", response.contains("remainingTurnTime"));
+    }
+    
+    /**
+     * Test handleSearchMovies method
+     */
+    @Test
+    public void testHandleSearchMovies() throws Exception, URISyntaxException {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock URI with query
+        when(mockExchange.getRequestURI()).thenReturn(new URI("/api/movies/search?term=test&limit=10"));
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleSearchMovies", HttpExchange.class, String.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange, "term=test&limit=10");
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+        
+        // Verify response contains movies data
+        String response = responseBody.toString();
+        assertTrue("Response should contain movies data", response.contains("movies"));
+    }
+    
+    /**
+     * Test parseQueryParams method
+     */
+    @Test
+    public void testParseQueryParams() throws Exception {
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("parseQueryParams", String.class);
+        method.setAccessible(true);
+        
+        // Test with valid query string
+        Map<String, String> params = (Map<String, String>) method.invoke(gameController, "param1=value1&param2=value2");
+        assertEquals("Should parse param1 correctly", "value1", params.get("param1"));
+        assertEquals("Should parse param2 correctly", "value2", params.get("param2"));
+        
+        // Test with empty query string
+        params = (Map<String, String>) method.invoke(gameController, "");
+        assertTrue("Should return empty map for empty query", params.isEmpty());
+        
+        // Test with null query string
+        params = (Map<String, String>) method.invoke(gameController, (String)null);
+        assertTrue("Should return empty map for null query", params.isEmpty());
+    }
+    
+    /**
+     * Test parseRequestBody method
+     */
+    @Test
+    public void testParseRequestBody() throws Exception {
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("parseRequestBody", String.class);
+        method.setAccessible(true);
+        
+        // Test with valid JSON body
+        Map<String, String> params = (Map<String, String>) method.invoke(gameController, "{\"key1\":\"value1\",\"key2\":\"value2\"}");
+        assertEquals("Should parse key1 correctly", "value1", params.get("key1"));
+        assertEquals("Should parse key2 correctly", "value2", params.get("key2"));
+        
+        // Test with empty body
+        params = (Map<String, String>) method.invoke(gameController, "");
+        assertTrue("Should return empty map for empty body", params.isEmpty());
+        
+        // Test with null body
+        params = (Map<String, String>) method.invoke(gameController, (String)null);
+        assertTrue("Should return empty map for null body", params.isEmpty());
+    }
+    
+    /**
+     * Test sendResponse method
+     */
+    @Test
+    public void testSendResponse() throws Exception {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Create a test ApiResponse
+        Map<String, Object> data = new HashMap<>();
+        data.put("testKey", "testValue");
+        ApiResponse response = ApiResponse.success(data);
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("sendResponse", HttpExchange.class, ApiResponse.class, int.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange, response, 200);
+        
+        // Verify headers were set
+        assertEquals("Content-Type should be set", "application/json; charset=UTF-8", mockHeaders.getFirst("Content-Type"));
+        assertEquals("CORS header should be set", "*", mockHeaders.getFirst("Access-Control-Allow-Origin"));
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(eq(200), anyLong());
+        
+        // Verify response body contains expected data
+        String responseStr = responseBody.toString();
+        assertTrue("Response should contain success status", responseStr.contains("success"));
+        assertTrue("Response should contain test data", responseStr.contains("testValue"));
     }
 }
