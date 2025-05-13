@@ -1,5 +1,6 @@
 # Compiled class file
-*.class
+# 临时注释掉，以便可以提交bin目录
+# *.class
 
 # Log file
 *.log
