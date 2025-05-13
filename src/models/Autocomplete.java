@@ -8,7 +8,7 @@ import java.util.Comparator;
 import models.Movie;
 
 public class Autocomplete {
-    // Trie 节点类
+    // Trie Node class
     private static class TrieNode {
         private Map<Character, TrieNode> children;
         private boolean isEndOfWord;
@@ -29,7 +29,7 @@ public class Autocomplete {
         totalMovies = 0;
     }
 
-    // 插入电影到 Trie
+    // Insert movie into Trie
     public void insert(Movie movie) {
         if (movie == null || movie.getTitle() == null) {
             System.out.println("Warning: Attempted to insert null movie or movie with null title");
@@ -53,12 +53,12 @@ public class Autocomplete {
         totalMovies++;
     }
 
-    // 根据前缀搜索匹配的电影
+    // Search movies by prefix
     public List<Movie> search(String prefix) {
-        return search(prefix, 20); // 默认返回20个结果
+        return search(prefix, 20); // Default return 20 results
     }
 
-    // 根据前缀搜索匹配的电影，限制返回数量
+    // Search movies by prefix with limit
     public List<Movie> search(String prefix, int limit) {
         List<Movie> results = new ArrayList<>();
         
@@ -106,7 +106,7 @@ public class Autocomplete {
         return limitedResults;
     }
 
-    // 递归收集所有可能的电影
+    // Recursively collect all possible movies
     private void collectMovies(TrieNode node, List<Movie> results) {
         if (node == null) {
             return;
@@ -121,7 +121,7 @@ public class Autocomplete {
         }
     }
 
-    // 电影比较器，用于按匹配度排序
+    // Movie comparator, used to sort by relevance
     private static class MovieComparator implements Comparator<Movie> {
         private final String prefix;
 

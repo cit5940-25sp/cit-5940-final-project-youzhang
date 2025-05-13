@@ -1,29 +1,29 @@
 #!/bin/bash
 
-# 清除并重新创建bin目录用于存放编译后的class文件
+# compile all Java files
 echo "Compiling all Java files..."
 ./compile.sh
 
-# 设置classpath，包含所有依赖库
+# set classpath, include all dependency libraries
 CLASSPATH="./bin:./src:./test"
 for jar in ./lib/*.jar; do
   CLASSPATH="$CLASSPATH:$jar"
 done
 
-# 清除旧的覆盖率报告
+# remove old coverage report
 rm -rf coverage-report
 mkdir -p coverage-report
 
 echo "Running all tests and generating unified coverage report..."
 
-# 使用JaCoCo运行所有测试并收集覆盖率信息
+# run all tests and collect coverage information
 java -javaagent:./lib/jacocoagent.jar=destfile=jacoco.exec \
      -cp "$CLASSPATH" \
      org.junit.runner.JUnitCore test.models.ClientTest test.models.MovieTest test.models.TupleTest \
      utils.AutocompleteTest utils.DataLoaderTest utils.MovieCsvParserTest utils.MovieIndexerTest \
      test.GameController.UnitTest
 
-# 检查测试是否成功
+# check if tests passed
 if [ $? -eq 0 ]; then
     echo "All tests passed successfully!"
 else
@@ -31,7 +31,7 @@ else
     exit 1
 fi
 
-# 生成统一的覆盖率报告
+# generate unified coverage report
 java -jar ./lib/jacococli.jar report jacoco.exec \
      --classfiles ./bin \
      --sourcefiles ./src \

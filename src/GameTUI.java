@@ -337,11 +337,6 @@ public class GameTUI {
                 }
             }
             
-            if (timeSuccess && timeData != null && timeData.containsKey("remainingTurnTime")) {
-                long remainingTurnTime = (Long) timeData.get("remainingTurnTime");
-                System.out.println("\nRemaining Turn Time: " + (remainingTurnTime / 1000) + " seconds");
-            }
-            
             System.out.println("\n──────────────────────────────────────────");
         } else {
             String errorMessage = "Unknown error";
@@ -596,10 +591,16 @@ public class GameTUI {
         }
         
         if (isSuccess && data != null) {
-            JSONArray movies = (JSONArray) data.get("movies");
+            // Stop timer as soon as search is successful
+            timerActive = false;
+            movieSelected = true;
+            System.out.println("⏰ Timer stopped - search completed!");
             
+            JSONArray movies = (JSONArray) data.get("movies");
             if (movies.isEmpty()) {
                 System.out.println("No movies found matching '" + searchTerm + "'");
+                System.out.println("No movies found. You can still use your abilities or pass to the next player.");
+                System.out.println("Return to the main menu to select your next action.");
                 return;
             }
             
@@ -738,7 +739,7 @@ public class GameTUI {
             return;
         }
         
-        System.out.println("\n=== Use Ability ===");
+        System.out.println("\n=== Use Ability（Only One Ability per Game)===");
         System.out.println("Current player: " + getCurrentPlayerName());
         
         // Get current player info from status data

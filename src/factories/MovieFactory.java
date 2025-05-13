@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 工厂类，负责创建电影对象
+ * factory class, responsible for creating movie objects
  */
 public class MovieFactory {
     
     /**
-     * 创建一个新的电影对象
+     * create a new movie object
      */
     public static Movie createMovie(String title, int id, int releaseYear, Set<String> genre, 
                                   List<Tuple<String, Integer>> cast, List<Tuple<String, Integer>> crew) {
@@ -21,11 +21,10 @@ public class MovieFactory {
     }
     
     /**
-     * 从数据映射创建电影对象
+     * create a movie object from data map
      */
     public static Movie createMovieFromData(Map<String, Object> data) {
-        // 这里可以实现从数据映射（如JSON或数据库结果）创建电影对象的逻辑
-        // 目前是一个简单的实现，实际应用中可以根据需要扩展
+        // implement the logic to create a movie object from data map
         String title = (String) data.get("title");
         int id = (int) data.get("id");
         int releaseYear = (int) data.get("releaseYear");

@@ -1,26 +1,26 @@
 #!/bin/bash
 
-# 先使用项目的编译脚本重新编译所有文件
+# compile all Java files
 echo "Compiling all Java files..."
 ./compile.sh
 
-# 设置classpath，包含所有依赖库
+# set classpath, include all dependency libraries
 CLASSPATH="./bin:./src:./test"
 for jar in ./lib/*.jar; do
   CLASSPATH="$CLASSPATH:$jar"
 done
 
-# 创建覆盖率报告目录
+# create coverage report directory
 mkdir -p coverage-report/models
 
 echo "Running models package tests..."
 
-# 使用JaCoCo运行models包中的所有测试并收集覆盖率信息
+# run models package tests and collect coverage information
 java -javaagent:./lib/jacocoagent.jar=destfile=jacoco_models.exec \
      -cp "$CLASSPATH" \
      org.junit.runner.JUnitCore test.models.ClientTest test.models.MovieTest test.models.TupleTest
 
-# 检查测试是否成功
+# check if tests passed
 if [ $? -eq 0 ]; then
     echo "All models tests passed successfully!"
 else
@@ -28,7 +28,7 @@ else
     exit 1
 fi
 
-# 生成覆盖率报告
+# generate coverage report
 java -jar ./lib/jacococli.jar report jacoco_models.exec \
      --classfiles ./bin \
      --sourcefiles ./src \
