@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovieIndexer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">utils</a> &gt; <span class="el_source">MovieIndexer.java</span></div><h1>MovieIndexer.java</h1><pre class="source lang-java linenums">package utils;
+
+import java.io.IOException;
+import java.util.List;
+import factories.ServiceFactory;
+import services.MovieService;
+import utils.DataLoader;
+import models.Movie;
+
+public class MovieIndexer {
+    private Autocomplete autocomplete;
+    private MovieService movieService;
+
+    public MovieIndexer() {
+<span class="nc" id="L15">        this(new Autocomplete());</span>
+<span class="nc" id="L16">    }</span>
+    
+<span class="fc" id="L18">    public MovieIndexer(Autocomplete autocomplete) {</span>
+<span class="fc" id="L19">        this.autocomplete = autocomplete;</span>
+<span class="fc" id="L20">        movieService = ServiceFactory.getMovieService();</span>
+<span class="fc" id="L21">    }</span>
+
+    // Load movies from CSV
+    public void loadMoviesFromCSV(String csvFilePath) {
+        try {
+            // Load movies using DataLoader
+<span class="nc" id="L27">            DataLoader dataLoader = new DataLoader(movieService);</span>
+<span class="nc" id="L28">            dataLoader.loadMoviesFromCsv(csvFilePath);</span>
+            
+            // Add loaded movies to Autocomplete
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            for (Movie movie : movieService.getAllMovies()) {</span>
+<span class="nc" id="L32">                autocomplete.insert(movie);</span>
+<span class="nc" id="L33">            }</span>
+<span class="nc" id="L34">        } catch (IOException e) {</span>
+<span class="nc" id="L35">            System.err.println(&quot;Error reading CSV file: &quot; + e.getMessage());</span>
+<span class="nc" id="L36">            e.printStackTrace();</span>
+<span class="nc" id="L37">        } catch (Exception e) {</span>
+<span class="nc" id="L38">            System.err.println(&quot;Error processing movie data: &quot; + e.getMessage());</span>
+<span class="nc" id="L39">            e.printStackTrace();</span>
+<span class="nc" id="L40">        }</span>
+<span class="nc" id="L41">    }</span>
+
+    // Search movies
+    public List&lt;Movie&gt; searchMovies(String prefix) {
+<span class="fc" id="L45">        return autocomplete.search(prefix);</span>
+    }
+
+    // Search movies with limit
+    public List&lt;Movie&gt; searchMovies(String prefix, int limit) {
+<span class="fc" id="L50">        return autocomplete.search(prefix, limit);</span>
+    }
+
+    // Get autocomplete instance
+    public Autocomplete getAutocomplete() {
+<span class="fc" id="L55">        return autocomplete;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -568,4 +568,167 @@ public class UnitTest {
         assertTrue("Response should contain success status", responseStr.contains("success"));
         assertTrue("Response should contain test data", responseStr.contains("testValue"));
     }
+    /**
+     * Test handleSelectMovie method
+     */
+    @Test
+    public void testHandleSelectMovie() throws Exception {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Initialize game with test players
+        gameService.initGame(testPlayers);
+        
+        // Get a valid movie ID for testing
+        List<Movie> allMovies = movieService.getAllMovies();
+        if (!allMovies.isEmpty()) {
+            // Get the initial movie from the current player
+            Client currentPlayer = gameService.getCurrentPlayer();
+            Movie initialMovie = currentPlayer.getMovies().get(0);
+            
+            // Find a connected movie
+            Movie connectedMovie = null;
+            for (Movie movie : allMovies) {
+                if (movie.getId() != initialMovie.getId() && movieService.areMoviesConnected(movie, initialMovie)) {
+                    connectedMovie = movie;
+                    break;
+                }
+            }
+            
+            if (connectedMovie != null) {
+                // Create a query string with the movie ID
+                String query = "id=" + connectedMovie.getId();
+                
+                // Use reflection to access private method
+                java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleSelectMovie", HttpExchange.class, String.class);
+                method.setAccessible(true);
+                method.invoke(gameController, mockExchange, query);
+                
+                // Verify response was sent
+                verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+            } else {
+                System.out.println("Skipping testHandleSelectMovie: Could not find a connected movie");
+            }
+        } else {
+            System.out.println("Skipping testHandleSelectMovie: No movies available");
+        }
+    }
+
+    /**
+     * Test handleSkipAction method
+     */
+    @Test
+    public void testHandleSkipAction() throws Exception {
+    // Create a mock HttpExchange
+    HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+    
+    // Setup mock response
+    Headers mockHeaders = new Headers();
+    when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+    ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+    when(mockExchange.getResponseBody()).thenReturn(responseBody);
+    
+    // Initialize game
+    gameService.initGame(testPlayers);
+    
+    // Use reflection to access private method
+    java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleSkipAction", HttpExchange.class);
+    method.setAccessible(true);
+    method.invoke(gameController, mockExchange);
+    
+    // Verify response was sent
+    verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+    
+    // Get the next player (who should be skipped)
+    int nextPlayerIndex = (gameService.getCurrentPlayerIndex() + 1) % gameService.getPlayers().size();
+    Client nextPlayer = gameService.getPlayers().get(nextPlayerIndex);
+    
+    // Verify next player is marked as skipped
+    assertTrue("Next player should be marked as skipped", nextPlayer.isSkipped());
+    
+    // Verify current player's skip is no longer available
+    Client currentPlayer = gameService.getCurrentPlayer();
+    assertFalse("Skip should not be available after use", currentPlayer.isSkipAvailable());
+}
+/**
+ * Test handleBlockAction method
+ */
+@Test
+public void testHandleBlockAction() throws Exception {
+    // Create a mock HttpExchange
+    HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+    
+    // Setup mock response
+    Headers mockHeaders = new Headers();
+    when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+    ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+    when(mockExchange.getResponseBody()).thenReturn(responseBody);
+    
+    // Initialize game
+    gameService.initGame(testPlayers);
+    
+    // Use reflection to access private method
+    java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleBlockAction", HttpExchange.class);
+    method.setAccessible(true);
+    method.invoke(gameController, mockExchange);
+    
+    // Verify response was sent
+    verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+    
+    // Get the opponent player (should be blocked)
+    int opponentIndex = (gameService.getCurrentPlayerIndex() + 1) % gameService.getPlayers().size();
+    Client opponent = gameService.getPlayers().get(opponentIndex);
+    
+    // Verify opponent is marked as blocked
+    assertTrue("Opponent should be marked as blocked", opponent.isBlocked());
+    
+    // Verify block is no longer available for current player
+    Client currentPlayer = gameService.getCurrentPlayer();
+    assertFalse("Block should not be available after use", currentPlayer.isBlockAvailable());
+}
+    /**
+     * Test handleNextPlayer method
+     */
+    @Test
+    public void testHandleNextPlayer() throws Exception {
+        // Create a mock HttpExchange
+        HttpExchange mockExchange = Mockito.mock(HttpExchange.class);
+        
+        // Setup mock response
+        Headers mockHeaders = new Headers();
+        when(mockExchange.getResponseHeaders()).thenReturn(mockHeaders);
+        ByteArrayOutputStream responseBody = new ByteArrayOutputStream();
+        when(mockExchange.getResponseBody()).thenReturn(responseBody);
+        
+        // Initialize game
+        gameService.initGame(testPlayers);
+        
+        // Get initial player index
+        int initialPlayerIndex = gameService.getCurrentPlayerIndex();
+        
+        // Use reflection to access private method
+        java.lang.reflect.Method method = GameController.class.getDeclaredMethod("handleNextPlayer", HttpExchange.class);
+        method.setAccessible(true);
+        method.invoke(gameController, mockExchange);
+        
+        // Verify response was sent
+        verify(mockExchange).sendResponseHeaders(anyInt(), anyLong());
+        
+        // Verify player has changed
+        int newPlayerIndex = gameService.getCurrentPlayerIndex();
+        assertNotEquals("Player index should change after handleNextPlayer", initialPlayerIndex, newPlayerIndex);
+        
+        // Parse response to verify it contains game status information
+        String response = responseBody.toString();
+        assertTrue("Response should contain gameOver status", response.contains("gameOver"));
+        assertTrue("Response should contain turnCount", response.contains("turnCount"));
+        assertTrue("Response should contain currentPlayerIndex", response.contains("currentPlayerIndex"));
+        assertTrue("Response should contain players information", response.contains("players"));
+    }
 }

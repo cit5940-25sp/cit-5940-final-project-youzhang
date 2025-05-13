@@ -5,7 +5,7 @@ import services.GameService;
 import services.MovieService;
 
 /**
- * 工厂类，负责创建和管理服务实例
+ * factory class, responsible for creating and managing service instances
  */
 public class ServiceFactory {
     private static ClientService clientService;
@@ -13,7 +13,7 @@ public class ServiceFactory {
     private static GameService gameService;
     
     /**
-     * 获取ClientService实例
+     * get ClientService instance
      */
     public static ClientService getClientService() {
         if (clientService == null) {
@@ -23,7 +23,7 @@ public class ServiceFactory {
     }
     
     /**
-     * 获取MovieService实例
+     * get MovieService instance
      */
     public static MovieService getMovieService() {
         if (movieService == null) {
@@ -33,7 +33,7 @@ public class ServiceFactory {
     }
     
     /**
-     * 获取GameService实例
+     * get GameService instance
      */
     public static GameService getGameService() {
         if (gameService == null) {

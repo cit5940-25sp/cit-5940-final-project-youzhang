@@ -10,40 +10,40 @@ import java.nio.file.Files;
 import java.net.InetSocketAddress;
 
 /**
- * 游戏服务器，负责启动HTTP服务器和注册控制器
+ * Game server, responsible for starting the HTTP server and registering controllers
  */
 public class GameServer {
     private final int port;
     private HttpServer server;
     
     /**
-     * 构造函数
+     * Constructor
      */
     public GameServer(int port) {
         this.port = port;
     }
     
     /**
-     * 初始化服务器
+     * Initialize the server
      */
     public void initialize() throws IOException {
-        // 创建HTTP服务器
+        // Create HTTP server
         server = HttpServer.create(new InetSocketAddress(port), 0);
         
-        // 加载电影数据
+        // Load movie data
         try {
             DataLoader dataLoader = new DataLoader();
             String projectPath = System.getProperty("user.dir");
-            // 如果当前目录是bin，则需要回到上一级目录
+            // If current directory is bin, go back to parent directory
             if (projectPath.endsWith("/bin")) {
                 projectPath = projectPath.substring(0, projectPath.length() - 4);
             }
             dataLoader.loadMoviesFromCsv(projectPath + "/src/movies.csv");
         } catch (IOException e) {
-            System.err.println("加载电影数据时发生错误: " + e.getMessage());
+            System.err.println("Error loading movie data: " + e.getMessage());
         }
         
-        // 注册控制器
+        // Register controller
         GameController gameController = new GameController();
         server.createContext("/api", gameController);
         
@@ -84,35 +84,35 @@ public class GameServer {
             }
         });
         
-        // 设置线程池
-        server.setExecutor(null); // 使用默认执行器
+        // Set thread pool
+        server.setExecutor(null); // Use default executor
     }
     
     /**
-     * 启动服务器
+     * Start the server
      */
     public void start() {
         if (server != null) {
             server.start();
-            System.out.println("游戏服务器已启动，监听端口: " + port);
+            System.out.println("Game server started, listening on port: " + port);
             System.out.println("Open http://localhost:" + port + " to play the game");
         } else {
-            System.err.println("服务器未初始化，请先调用initialize()方法");
+            System.err.println("Server not initialized, please call initialize() method first");
         }
     }
     
     /**
-     * 停止服务器
+     * Stop the server
      */
     public void stop() {
         if (server != null) {
             server.stop(0);
-            System.out.println("游戏服务器已停止");
+            System.out.println("Game server stopped");
         }
     }
     
     /**
-     * 主方法，用于启动服务器
+     * Main method for starting the server
      */
     public static void main(String[] args) {
         try {
@@ -121,7 +121,7 @@ public class GameServer {
                 try {
                     port = Integer.parseInt(args[0]);
                 } catch (NumberFormatException e) {
-                    System.err.println("无效的端口号，使用默认端口8080");
+                    System.err.println("Invalid port number, using default port 8080");
                 }
             }
             
@@ -129,11 +129,11 @@ public class GameServer {
             gameServer.initialize();
             gameServer.start();
             
-            // 添加关闭钩子，确保服务器在JVM关闭时正常停止
+            // Add shutdown hook to ensure server stops properly when JVM shuts down
             Runtime.getRuntime().addShutdownHook(new Thread(gameServer::stop));
             
         } catch (IOException e) {
-            System.err.println("启动服务器时发生错误: " + e.getMessage());
+            System.err.println("Error starting server: " + e.getMessage());
             e.printStackTrace();
         }
     }
