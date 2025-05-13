@@ -337,657 +337,658 @@ import org.json.simple.parser.ParseException;
                 }
             }
             
-<span class="nc bnc" id="L340" title="All 6 branches missed.">            if (timeSuccess &amp;&amp; timeData != null &amp;&amp; timeData.containsKey(&quot;remainingTurnTime&quot;)) {</span>
-<span class="nc" id="L341">                long remainingTurnTime = (Long) timeData.get(&quot;remainingTurnTime&quot;);</span>
-<span class="nc" id="L342">                System.out.println(&quot;\nRemaining Turn Time: &quot; + (remainingTurnTime / 1000) + &quot; seconds&quot;);</span>
+<span class="nc" id="L340">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L341">        } else {</span>
+<span class="nc" id="L342">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L344">                errorMessage = (String) response.get(&quot;message&quot;);</span>
             }
-            
-<span class="nc" id="L345">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L346">        } else {</span>
-<span class="nc" id="L347">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L348" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L349">                errorMessage = (String) response.get(&quot;message&quot;);</span>
-            }
-<span class="nc" id="L351">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
+<span class="nc" id="L346">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
         }
-<span class="nc" id="L353">    }</span>
+<span class="nc" id="L348">    }</span>
     
     private static void searchAndSelectMovie() throws IOException, ParseException {
-<span class="nc bnc" id="L356" title="All 2 branches missed.">        if (!gameStarted) {</span>
-<span class="nc" id="L357">            System.out.println(&quot;Game not started yet. Please setup the game first (option 1)&quot;);</span>
-<span class="nc" id="L358">            return;</span>
+<span class="nc bnc" id="L351" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L352">            System.out.println(&quot;Game not started yet. Please setup the game first (option 1)&quot;);</span>
+<span class="nc" id="L353">            return;</span>
         }
         
-<span class="nc" id="L361">        System.out.println(&quot;\n=== Search and Select Movie ===&quot;);</span>
+<span class="nc" id="L356">        System.out.println(&quot;\n=== Search and Select Movie ===&quot;);</span>
         
         // 初始化倒计时状态
-<span class="nc" id="L364">        timerRemainingSeconds = 30;</span>
-<span class="nc" id="L365">        timerActive = true;</span>
-<span class="nc" id="L366">        timerExpired = false;</span>
-<span class="nc" id="L367">        movieSelected = false;</span>
+<span class="nc" id="L359">        timerRemainingSeconds = 30;</span>
+<span class="nc" id="L360">        timerActive = true;</span>
+<span class="nc" id="L361">        timerExpired = false;</span>
+<span class="nc" id="L362">        movieSelected = false;</span>
         
-<span class="nc" id="L369">        System.out.println(&quot;⏰ 30-SECOND COUNTDOWN STARTED! ⏰&quot;);</span>
-<span class="nc" id="L370">        System.out.println(&quot;⏰ Time remaining: 30 seconds&quot;);</span>
+<span class="nc" id="L364">        System.out.println(&quot;⏰ 30-SECOND COUNTDOWN STARTED! ⏰&quot;);</span>
+<span class="nc" id="L365">        System.out.println(&quot;⏰ Time remaining: 30 seconds&quot;);</span>
         
         // 启动倒计时线程 - 在控制台显示倒计时，但不干扰用户输入
-<span class="nc" id="L373">        Thread timerThread = new Thread(() -&gt; {</span>
+<span class="nc" id="L368">        Thread timerThread = new Thread(() -&gt; {</span>
             try {
                 // 创建一个专用于倒计时显示的区域
-<span class="nc" id="L376">                System.out.println(&quot;\n--- COUNTDOWN TIMER STARTED ---&quot;);</span>
+<span class="nc" id="L371">                System.out.println(&quot;\n--- COUNTDOWN TIMER STARTED ---&quot;);</span>
                 
-<span class="nc bnc" id="L378" title="All 4 branches missed.">                while (timerRemainingSeconds &gt; 0 &amp;&amp; !movieSelected) {</span>
+<span class="nc bnc" id="L373" title="All 4 branches missed.">                while (timerRemainingSeconds &gt; 0 &amp;&amp; !movieSelected) {</span>
                     // 清晰地显示当前倒计时状态
-<span class="nc" id="L380">                    System.out.println(&quot;\n⏰ COUNTDOWN: &quot; + timerRemainingSeconds + &quot; seconds remaining&quot;);</span>
+<span class="nc" id="L375">                    System.out.println(&quot;\n⏰ COUNTDOWN: &quot; + timerRemainingSeconds + &quot; seconds remaining&quot;);</span>
                     
                     // 特殊警告
-<span class="nc bnc" id="L383" title="All 2 branches missed.">                    if (timerRemainingSeconds == 10) {</span>
-<span class="nc" id="L384">                        System.out.println(&quot;⚠️ WARNING: Only 10 seconds remaining! ⚠️&quot;);</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">                    if (timerRemainingSeconds == 10) {</span>
+<span class="nc" id="L379">                        System.out.println(&quot;⚠️ WARNING: Only 10 seconds remaining! ⚠️&quot;);</span>
                     }
                     
                     // 等待一秒
-<span class="nc" id="L388">                    Thread.sleep(1000);</span>
-<span class="nc" id="L389">                    timerRemainingSeconds--;</span>
+<span class="nc" id="L383">                    Thread.sleep(1000);</span>
+<span class="nc" id="L384">                    timerRemainingSeconds--;</span>
                     
                     // 时间到期处理
-<span class="nc bnc" id="L392" title="All 2 branches missed.">                    if (timerRemainingSeconds &lt;= 0) {</span>
-<span class="nc" id="L393">                        timerExpired = true;</span>
-<span class="nc" id="L394">                        timerActive = false;</span>
+<span class="nc bnc" id="L387" title="All 2 branches missed.">                    if (timerRemainingSeconds &lt;= 0) {</span>
+<span class="nc" id="L388">                        timerExpired = true;</span>
+<span class="nc" id="L389">                        timerActive = false;</span>
                         
                         // 显示时间到期信息
-<span class="nc" id="L397">                        System.out.println(&quot;\n⏰ TIME'S UP! ⏰&quot;);</span>
-<span class="nc" id="L398">                        System.out.println(&quot;You ran out of time to select a movie.&quot;);</span>
-<span class="nc" id="L399">                        System.out.println(&quot;Your opponent wins!&quot;);</span>
+<span class="nc" id="L392">                        System.out.println(&quot;\n⏰ TIME'S UP! ⏰&quot;);</span>
+<span class="nc" id="L393">                        System.out.println(&quot;You ran out of time to select a movie.&quot;);</span>
+<span class="nc" id="L394">                        System.out.println(&quot;Your opponent wins!&quot;);</span>
                         
                         // 获取对手名称
-<span class="nc bnc" id="L402" title="All 2 branches missed.">                        String opponentName = (currentPlayerIndex == 0) ? player2Name : player1Name;</span>
-<span class="nc" id="L403">                        System.out.println(&quot;Winner: &quot; + opponentName);</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                        String opponentName = (currentPlayerIndex == 0) ? player2Name : player1Name;</span>
+<span class="nc" id="L398">                        System.out.println(&quot;Winner: &quot; + opponentName);</span>
                         
                         // 重置游戏状态
-<span class="nc" id="L406">                        gameStarted = false;</span>
-<span class="nc" id="L407">                        currentPlayerIndex = 0;</span>
-<span class="nc" id="L408">                        lastMovieTitle = &quot;&quot;;</span>
+<span class="nc" id="L401">                        gameStarted = false;</span>
+<span class="nc" id="L402">                        currentPlayerIndex = 0;</span>
+<span class="nc" id="L403">                        lastMovieTitle = &quot;&quot;;</span>
                         
-<span class="nc" id="L410">                        System.out.println(&quot;\nPlease start a new game (option 2).&quot;);</span>
-<span class="nc" id="L411">                        break;</span>
+<span class="nc" id="L405">                        System.out.println(&quot;\nPlease start a new game (option 2).&quot;);</span>
+<span class="nc" id="L406">                        break;</span>
                     }
                 }
                 
                 // 倒计时结束（正常或被中断）
-<span class="nc bnc" id="L416" title="All 4 branches missed.">                if (!timerExpired &amp;&amp; movieSelected) {</span>
-<span class="nc" id="L417">                    System.out.println(&quot;\n--- COUNTDOWN STOPPED ---&quot;);</span>
+<span class="nc bnc" id="L411" title="All 4 branches missed.">                if (!timerExpired &amp;&amp; movieSelected) {</span>
+<span class="nc" id="L412">                    System.out.println(&quot;\n--- COUNTDOWN STOPPED ---&quot;);</span>
                 }
                 
-<span class="nc" id="L420">            } catch (InterruptedException e) {</span>
+<span class="nc" id="L415">            } catch (InterruptedException e) {</span>
                 // 线程被中断
-<span class="nc" id="L422">            }</span>
-<span class="nc" id="L423">        });</span>
+<span class="nc" id="L417">            }</span>
+<span class="nc" id="L418">        });</span>
         
-<span class="nc" id="L425">        timerThread.setDaemon(true); // 设置为守护线程</span>
-<span class="nc" id="L426">        timerThread.start();</span>
+<span class="nc" id="L420">        timerThread.setDaemon(true); // 设置为守护线程</span>
+<span class="nc" id="L421">        timerThread.start();</span>
         
         // Get game status to check if current player is blocked or has already selected a movie
-<span class="nc" id="L429">        String statusEndpoint = &quot;/game/status&quot;;</span>
-<span class="nc" id="L430">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
+<span class="nc" id="L424">        String statusEndpoint = &quot;/game/status&quot;;</span>
+<span class="nc" id="L425">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
         
         // Process status response
-<span class="nc" id="L433">        boolean isStatusSuccess = false;</span>
-<span class="nc" id="L434">        JSONObject statusData = null;</span>
+<span class="nc" id="L428">        boolean isStatusSuccess = false;</span>
+<span class="nc" id="L429">        JSONObject statusData = null;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L437" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L438">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L439" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc bnc" id="L440" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
-<span class="nc" id="L441">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L432" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L433">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L434" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc bnc" id="L435" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
+<span class="nc" id="L436">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
-<span class="nc" id="L443">        } </span>
+<span class="nc" id="L438">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L445" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L446">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
-<span class="nc bnc" id="L447" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L448">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L440" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L441">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L442" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L443">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
         }
         
-<span class="nc bnc" id="L452" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
-<span class="nc" id="L453">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
-<span class="nc bnc" id="L454" title="All 2 branches missed.">            int turnCount = statusData.containsKey(&quot;turnCount&quot;) ? ((Long) statusData.get(&quot;turnCount&quot;)).intValue() : 0;</span>
+<span class="nc bnc" id="L447" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
+<span class="nc" id="L448">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
+<span class="nc bnc" id="L449" title="All 2 branches missed.">            int turnCount = statusData.containsKey(&quot;turnCount&quot;) ? ((Long) statusData.get(&quot;turnCount&quot;)).intValue() : 0;</span>
             
-<span class="nc bnc" id="L456" title="All 2 branches missed.">            if (gameOver) {</span>
-<span class="nc" id="L457">                System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L458">                System.out.println(&quot;Game is already over. Cannot select a movie.&quot;);</span>
-<span class="nc bnc" id="L459" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
-<span class="nc" id="L460">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
+<span class="nc bnc" id="L451" title="All 2 branches missed.">            if (gameOver) {</span>
+<span class="nc" id="L452">                System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L453">                System.out.println(&quot;Game is already over. Cannot select a movie.&quot;);</span>
+<span class="nc bnc" id="L454" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
+<span class="nc" id="L455">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
                 }
-<span class="nc" id="L462">                System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L463">                return;</span>
+<span class="nc" id="L457">                System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L458">                return;</span>
             }
             
             // Display game status information
-<span class="nc" id="L467">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L468">            System.out.println(&quot;GAME INFO&quot;);</span>
-<span class="nc" id="L469">            System.out.println(&quot;Turn Count: &quot; + turnCount);</span>
+<span class="nc" id="L462">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L463">            System.out.println(&quot;GAME INFO&quot;);</span>
+<span class="nc" id="L464">            System.out.println(&quot;Turn Count: &quot; + turnCount);</span>
             
             // Display last movie information
-<span class="nc bnc" id="L472" title="All 2 branches missed.">            if (statusData.containsKey(&quot;lastMovie&quot;)) {</span>
-<span class="nc" id="L473">                JSONObject lastMovie = (JSONObject) statusData.get(&quot;lastMovie&quot;);</span>
-<span class="nc" id="L474">                lastMovieTitle = (String) lastMovie.get(&quot;title&quot;);</span>
-<span class="nc" id="L475">                System.out.println(&quot;\nLast Movie: &quot; + lastMovieTitle);</span>
-<span class="nc" id="L476">                System.out.println(&quot;Genre: &quot; + lastMovie.get(&quot;genre&quot;));</span>
-<span class="nc" id="L477">                System.out.println(&quot;Release Year: &quot; + lastMovie.get(&quot;releaseYear&quot;));</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">            if (statusData.containsKey(&quot;lastMovie&quot;)) {</span>
+<span class="nc" id="L468">                JSONObject lastMovie = (JSONObject) statusData.get(&quot;lastMovie&quot;);</span>
+<span class="nc" id="L469">                lastMovieTitle = (String) lastMovie.get(&quot;title&quot;);</span>
+<span class="nc" id="L470">                System.out.println(&quot;\nLast Movie: &quot; + lastMovieTitle);</span>
+<span class="nc" id="L471">                System.out.println(&quot;Genre: &quot; + lastMovie.get(&quot;genre&quot;));</span>
+<span class="nc" id="L472">                System.out.println(&quot;Release Year: &quot; + lastMovie.get(&quot;releaseYear&quot;));</span>
             }
             
             // Get current player info
-<span class="nc" id="L481">            JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
-<span class="nc" id="L482">            JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
+<span class="nc" id="L476">            JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
+<span class="nc" id="L477">            JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
             
             // Check if player is blocked
-<span class="nc bnc" id="L485" title="All 4 branches missed.">            if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
-<span class="nc" id="L486">                System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L487">                System.out.println(&quot;\u26a0\ufe0f You are blocked for this turn and cannot select a movie.&quot;);</span>
-<span class="nc" id="L488">                System.out.println(&quot;Please use 'Next Player' option to continue.&quot;);</span>
-<span class="nc" id="L489">                System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L490">                return;</span>
+<span class="nc bnc" id="L480" title="All 4 branches missed.">            if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
+<span class="nc" id="L481">                System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L482">                System.out.println(&quot;\u26a0\ufe0f You are blocked for this turn and cannot select a movie.&quot;);</span>
+<span class="nc" id="L483">                System.out.println(&quot;Please use 'Next Player' option to continue.&quot;);</span>
+<span class="nc" id="L484">                System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L485">                return;</span>
             }
             
             // Display current player information
-<span class="nc" id="L494">            String playerName = (String) currentPlayer.get(&quot;name&quot;);</span>
-<span class="nc" id="L495">            String targetGenre = (String) currentPlayer.get(&quot;targetGenre&quot;);</span>
-<span class="nc" id="L496">            int targetGenreCount = ((Long) currentPlayer.get(&quot;targetGenreCount&quot;)).intValue();</span>
-<span class="nc" id="L497">            int winThreshold = ((Long) currentPlayer.get(&quot;winThreshold&quot;)).intValue();</span>
-<span class="nc" id="L498">            boolean skipAvailable = (boolean) currentPlayer.get(&quot;skipAvailable&quot;);</span>
-<span class="nc" id="L499">            boolean blockAvailable = (boolean) currentPlayer.get(&quot;blockAvailable&quot;);</span>
+<span class="nc" id="L489">            String playerName = (String) currentPlayer.get(&quot;name&quot;);</span>
+<span class="nc" id="L490">            String targetGenre = (String) currentPlayer.get(&quot;targetGenre&quot;);</span>
+<span class="nc" id="L491">            int targetGenreCount = ((Long) currentPlayer.get(&quot;targetGenreCount&quot;)).intValue();</span>
+<span class="nc" id="L492">            int winThreshold = ((Long) currentPlayer.get(&quot;winThreshold&quot;)).intValue();</span>
+<span class="nc" id="L493">            boolean skipAvailable = (boolean) currentPlayer.get(&quot;skipAvailable&quot;);</span>
+<span class="nc" id="L494">            boolean blockAvailable = (boolean) currentPlayer.get(&quot;blockAvailable&quot;);</span>
             
-<span class="nc" id="L501">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L502">            System.out.println(&quot;CURRENT PLAYER: &quot; + playerName);</span>
-<span class="nc" id="L503">            System.out.println(&quot;Target Genre: &quot; + targetGenre);</span>
-<span class="nc" id="L504">            System.out.println(&quot;Progress: &quot; + targetGenreCount + &quot;/&quot; + winThreshold + &quot; movies&quot;);</span>
+<span class="nc" id="L496">            System.out.println(&quot;\n──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L497">            System.out.println(&quot;CURRENT PLAYER: &quot; + playerName);</span>
+<span class="nc" id="L498">            System.out.println(&quot;Target Genre: &quot; + targetGenre);</span>
+<span class="nc" id="L499">            System.out.println(&quot;Progress: &quot; + targetGenreCount + &quot;/&quot; + winThreshold + &quot; movies&quot;);</span>
             
             // Calculate progress percentage
-<span class="nc" id="L507">            int progressPercentage = (int) ((double) targetGenreCount / winThreshold * 100);</span>
-<span class="nc" id="L508">            int filledBlocks = progressPercentage / 10;</span>
-<span class="nc" id="L509">            int emptyBlocks = 10 - filledBlocks;</span>
+<span class="nc" id="L502">            int progressPercentage = (int) ((double) targetGenreCount / winThreshold * 100);</span>
+<span class="nc" id="L503">            int filledBlocks = progressPercentage / 10;</span>
+<span class="nc" id="L504">            int emptyBlocks = 10 - filledBlocks;</span>
             
-<span class="nc" id="L511">            StringBuilder progressBar = new StringBuilder(&quot;[&quot;);</span>
-<span class="nc bnc" id="L512" title="All 2 branches missed.">            for (int k = 0; k &lt; filledBlocks; k++) {</span>
-<span class="nc" id="L513">                progressBar.append(&quot;■&quot;); // Filled block</span>
+<span class="nc" id="L506">            StringBuilder progressBar = new StringBuilder(&quot;[&quot;);</span>
+<span class="nc bnc" id="L507" title="All 2 branches missed.">            for (int k = 0; k &lt; filledBlocks; k++) {</span>
+<span class="nc" id="L508">                progressBar.append(&quot;■&quot;); // Filled block</span>
             }
-<span class="nc bnc" id="L515" title="All 2 branches missed.">            for (int k = 0; k &lt; emptyBlocks; k++) {</span>
-<span class="nc" id="L516">                progressBar.append(&quot;□&quot;); // Empty block</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">            for (int k = 0; k &lt; emptyBlocks; k++) {</span>
+<span class="nc" id="L511">                progressBar.append(&quot;□&quot;); // Empty block</span>
             }
-<span class="nc" id="L518">            progressBar.append(&quot;] &quot;).append(progressPercentage).append(&quot;%&quot;);</span>
-<span class="nc" id="L519">            System.out.println(progressBar.toString());</span>
+<span class="nc" id="L513">            progressBar.append(&quot;] &quot;).append(progressPercentage).append(&quot;%&quot;);</span>
+<span class="nc" id="L514">            System.out.println(progressBar.toString());</span>
             
-<span class="nc bnc" id="L521" title="All 4 branches missed.">            System.out.println(&quot;Abilities: &quot; + </span>
+<span class="nc bnc" id="L516" title="All 4 branches missed.">            System.out.println(&quot;Abilities: &quot; + </span>
                            (skipAvailable ? &quot;Skip Available&quot; : &quot;Skip Used&quot;) + &quot;, &quot; + 
                            (blockAvailable ? &quot;Block Available&quot; : &quot;Block Used&quot;));
             
             // Display player's movie list
-<span class="nc bnc" id="L526" title="All 2 branches missed.">            if (currentPlayer.containsKey(&quot;movies&quot;)) {</span>
-<span class="nc" id="L527">                JSONArray movies = (JSONArray) currentPlayer.get(&quot;movies&quot;);</span>
-<span class="nc bnc" id="L528" title="All 2 branches missed.">                if (!movies.isEmpty()) {</span>
-<span class="nc" id="L529">                    System.out.println(&quot;\nYour Selected Movies:&quot;);</span>
-<span class="nc bnc" id="L530" title="All 2 branches missed.">                    for (int j = 0; j &lt; movies.size(); j++) {</span>
-<span class="nc" id="L531">                        JSONObject movie = (JSONObject) movies.get(j);</span>
-<span class="nc" id="L532">                        System.out.printf(&quot;  %d. %s (%d)\n&quot;, j + 1, movie.get(&quot;title&quot;), movie.get(&quot;releaseYear&quot;));</span>
+<span class="nc bnc" id="L521" title="All 2 branches missed.">            if (currentPlayer.containsKey(&quot;movies&quot;)) {</span>
+<span class="nc" id="L522">                JSONArray movies = (JSONArray) currentPlayer.get(&quot;movies&quot;);</span>
+<span class="nc bnc" id="L523" title="All 2 branches missed.">                if (!movies.isEmpty()) {</span>
+<span class="nc" id="L524">                    System.out.println(&quot;\nYour Selected Movies:&quot;);</span>
+<span class="nc bnc" id="L525" title="All 2 branches missed.">                    for (int j = 0; j &lt; movies.size(); j++) {</span>
+<span class="nc" id="L526">                        JSONObject movie = (JSONObject) movies.get(j);</span>
+<span class="nc" id="L527">                        System.out.printf(&quot;  %d. %s (%d)\n&quot;, j + 1, movie.get(&quot;title&quot;), movie.get(&quot;releaseYear&quot;));</span>
                     }
                 }
             }
-<span class="nc" id="L536">            System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
-<span class="nc" id="L537">        } else {</span>
-<span class="nc" id="L538">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L539" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L540">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
+<span class="nc" id="L531">            System.out.println(&quot;──────────────────────────────────────────&quot;);</span>
+<span class="nc" id="L532">        } else {</span>
+<span class="nc" id="L533">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L535">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L542">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
-<span class="nc" id="L543">            return;</span>
+<span class="nc" id="L537">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
+<span class="nc" id="L538">            return;</span>
         }
         
         // 检查倒计时是否已过期
-<span class="nc bnc" id="L547" title="All 2 branches missed.">        if (timerExpired) {</span>
-<span class="nc" id="L548">            return; // 如果倒计时已过期，立即返回</span>
+<span class="nc bnc" id="L542" title="All 2 branches missed.">        if (timerExpired) {</span>
+<span class="nc" id="L543">            return; // 如果倒计时已过期，立即返回</span>
         }
         
         // 不再在这里显示剩余时间，因为倒计时线程会定期显示
         
-<span class="nc" id="L553">        System.out.print(&quot;Enter search term: &quot;);</span>
+<span class="nc" id="L548">        System.out.print(&quot;Enter search term: &quot;);</span>
         // 使用BufferedReader代替Scanner.nextLine()，避免被其他线程干扰
-<span class="nc" id="L555">        String searchTerm = &quot;&quot;;</span>
+<span class="nc" id="L550">        String searchTerm = &quot;&quot;;</span>
         try {
-<span class="nc" id="L557">            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));</span>
-<span class="nc" id="L558">            searchTerm = reader.readLine();</span>
-<span class="nc" id="L559">        } catch (IOException e) {</span>
-<span class="nc" id="L560">            System.out.println(&quot;Error reading input: &quot; + e.getMessage());</span>
-<span class="nc" id="L561">            return;</span>
-<span class="nc" id="L562">        }</span>
+<span class="nc" id="L552">            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));</span>
+<span class="nc" id="L553">            searchTerm = reader.readLine();</span>
+<span class="nc" id="L554">        } catch (IOException e) {</span>
+<span class="nc" id="L555">            System.out.println(&quot;Error reading input: &quot; + e.getMessage());</span>
+<span class="nc" id="L556">            return;</span>
+<span class="nc" id="L557">        }</span>
         
-<span class="nc bnc" id="L564" title="All 2 branches missed.">        if (searchTerm.isEmpty()) {</span>
-<span class="nc" id="L565">            System.out.println(&quot;Search term cannot be empty&quot;);</span>
-<span class="nc" id="L566">            return;</span>
+<span class="nc bnc" id="L559" title="All 2 branches missed.">        if (searchTerm.isEmpty()) {</span>
+<span class="nc" id="L560">            System.out.println(&quot;Search term cannot be empty&quot;);</span>
+<span class="nc" id="L561">            return;</span>
         }
         
         // 再次检查倒计时是否已过期（输入后）
-<span class="nc bnc" id="L570" title="All 2 branches missed.">        if (timerExpired) {</span>
-<span class="nc" id="L571">            System.out.println(&quot;Sorry, time expired while you were typing.&quot;);</span>
-<span class="nc" id="L572">            return;</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">        if (timerExpired) {</span>
+<span class="nc" id="L566">            System.out.println(&quot;Sorry, time expired while you were typing.&quot;);</span>
+<span class="nc" id="L567">            return;</span>
         }
         
-<span class="nc" id="L575">        String endpoint = &quot;/movies/search?term=&quot; + searchTerm + &quot;&amp;limit=10&quot;;</span>
-<span class="nc" id="L576">        JSONObject response = sendGetRequest(endpoint);</span>
+<span class="nc" id="L570">        String endpoint = &quot;/movies/search?term=&quot; + searchTerm + &quot;&amp;limit=10&quot;;</span>
+<span class="nc" id="L571">        JSONObject response = sendGetRequest(endpoint);</span>
         
         // Process search response
-<span class="nc" id="L579">        boolean isSuccess = false;</span>
-<span class="nc" id="L580">        JSONObject data = null;</span>
+<span class="nc" id="L574">        boolean isSuccess = false;</span>
+<span class="nc" id="L575">        JSONObject data = null;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L583" title="All 4 branches missed.">        if (response.containsKey(&quot;code&quot;) &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L584">            Long code = (Long) response.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L585" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc bnc" id="L586" title="All 2 branches missed.">            if (isSuccess) {</span>
-<span class="nc" id="L587">                data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L578" title="All 4 branches missed.">        if (response.containsKey(&quot;code&quot;) &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L579">            Long code = (Long) response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L580" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">            if (isSuccess) {</span>
+<span class="nc" id="L582">                data = (JSONObject) response.get(&quot;data&quot;);</span>
             }
-<span class="nc" id="L589">        } </span>
+<span class="nc" id="L584">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L591" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L592">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
-<span class="nc bnc" id="L593" title="All 4 branches missed.">            if (isSuccess &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L594">                data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L586" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L587">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L588" title="All 4 branches missed.">            if (isSuccess &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L589">                data = (JSONObject) response.get(&quot;data&quot;);</span>
             }
         }
         
-<span class="nc bnc" id="L598" title="All 4 branches missed.">        if (isSuccess &amp;&amp; data != null) {</span>
-<span class="nc" id="L599">            JSONArray movies = (JSONArray) data.get(&quot;movies&quot;);</span>
+<span class="nc bnc" id="L593" title="All 4 branches missed.">        if (isSuccess &amp;&amp; data != null) {</span>
+            // Stop timer as soon as search is successful
+<span class="nc" id="L595">            timerActive = false;</span>
+<span class="nc" id="L596">            movieSelected = true;</span>
+<span class="nc" id="L597">            System.out.println(&quot;⏰ Timer stopped - search completed!&quot;);</span>
             
-<span class="nc bnc" id="L601" title="All 2 branches missed.">            if (movies.isEmpty()) {</span>
-<span class="nc" id="L602">                System.out.println(&quot;No movies found matching '&quot; + searchTerm + &quot;'&quot;);</span>
-<span class="nc" id="L603">                return;</span>
+<span class="nc" id="L599">            JSONArray movies = (JSONArray) data.get(&quot;movies&quot;);</span>
+<span class="nc bnc" id="L600" title="All 2 branches missed.">            if (movies.isEmpty()) {</span>
+<span class="nc" id="L601">                System.out.println(&quot;No movies found matching '&quot; + searchTerm + &quot;'&quot;);</span>
+<span class="nc" id="L602">                System.out.println(&quot;No movies found. You can still use your abilities or pass to the next player.&quot;);</span>
+<span class="nc" id="L603">                System.out.println(&quot;Return to the main menu to select your next action.&quot;);</span>
+<span class="nc" id="L604">                return;</span>
             }
             
-<span class="nc" id="L606">            System.out.println(&quot;\nSearch results:&quot;);</span>
-<span class="nc bnc" id="L607" title="All 2 branches missed.">            for (int i = 0; i &lt; movies.size(); i++) {</span>
-<span class="nc" id="L608">                JSONObject movie = (JSONObject) movies.get(i);</span>
-<span class="nc" id="L609">                System.out.printf(&quot;%d. %s (%d)\n&quot;, i + 1, movie.get(&quot;title&quot;), movie.get(&quot;releaseYear&quot;));</span>
+<span class="nc" id="L607">            System.out.println(&quot;\nSearch results:&quot;);</span>
+<span class="nc bnc" id="L608" title="All 2 branches missed.">            for (int i = 0; i &lt; movies.size(); i++) {</span>
+<span class="nc" id="L609">                JSONObject movie = (JSONObject) movies.get(i);</span>
+<span class="nc" id="L610">                System.out.printf(&quot;%d. %s (%d)\n&quot;, i + 1, movie.get(&quot;title&quot;), movie.get(&quot;releaseYear&quot;));</span>
                 
                 // Display genres if available
-<span class="nc bnc" id="L612" title="All 2 branches missed.">                if (movie.containsKey(&quot;genre&quot;)) {</span>
-<span class="nc" id="L613">                    System.out.println(&quot;   Genres: &quot; + movie.get(&quot;genre&quot;));</span>
+<span class="nc bnc" id="L613" title="All 2 branches missed.">                if (movie.containsKey(&quot;genre&quot;)) {</span>
+<span class="nc" id="L614">                    System.out.println(&quot;   Genres: &quot; + movie.get(&quot;genre&quot;));</span>
                 }
             }
             
-<span class="nc" id="L617">            System.out.print(&quot;\nSelect a movie (1-&quot; + movies.size() + &quot;) or 0 to cancel: &quot;);</span>
-<span class="nc" id="L618">            int selection = getUserChoice(0, movies.size());</span>
+<span class="nc" id="L618">            System.out.print(&quot;\nSelect a movie (1-&quot; + movies.size() + &quot;) or 0 to cancel: &quot;);</span>
+<span class="nc" id="L619">            int selection = getUserChoice(0, movies.size());</span>
             
-<span class="nc bnc" id="L620" title="All 2 branches missed.">            if (selection == 0) {</span>
-<span class="nc" id="L621">                System.out.println(&quot;Selection cancelled&quot;);</span>
-<span class="nc" id="L622">                return;</span>
+<span class="nc bnc" id="L621" title="All 2 branches missed.">            if (selection == 0) {</span>
+<span class="nc" id="L622">                System.out.println(&quot;Selection cancelled&quot;);</span>
+<span class="nc" id="L623">                return;</span>
             }
             
-<span class="nc" id="L625">            JSONObject selectedMovie = (JSONObject) movies.get(selection - 1);</span>
-<span class="nc" id="L626">            int movieId = ((Long) selectedMovie.get(&quot;id&quot;)).intValue();</span>
+<span class="nc" id="L626">            JSONObject selectedMovie = (JSONObject) movies.get(selection - 1);</span>
+<span class="nc" id="L627">            int movieId = ((Long) selectedMovie.get(&quot;id&quot;)).intValue();</span>
             
             // Check if countdown has expired
-<span class="nc bnc" id="L629" title="All 2 branches missed.">            if (timerExpired) {</span>
-<span class="nc" id="L630">                return; // If countdown has expired, return immediately</span>
+<span class="nc bnc" id="L630" title="All 2 branches missed.">            if (timerExpired) {</span>
+<span class="nc" id="L631">                return; // If countdown has expired, return immediately</span>
             }
             
             // 标记电影已选择，停止倒计时
-<span class="nc" id="L634">            movieSelected = true;</span>
-<span class="nc" id="L635">            timerActive = false;</span>
-<span class="nc" id="L636">            System.out.println(&quot;⏰ Timer stopped - movie selected successfully!&quot;);</span>
+<span class="nc" id="L635">            movieSelected = true;</span>
+<span class="nc" id="L636">            timerActive = false;</span>
+<span class="nc" id="L637">            System.out.println(&quot;⏰ Timer stopped - movie selected successfully!&quot;);</span>
             
             // Select the movie
-<span class="nc" id="L639">            endpoint = &quot;/movies/select?id=&quot; + movieId;</span>
-<span class="nc" id="L640">            JSONObject selectResponse = sendPostRequest(endpoint, &quot;&quot;);</span>
+<span class="nc" id="L640">            endpoint = &quot;/movies/select?id=&quot; + movieId;</span>
+<span class="nc" id="L641">            JSONObject selectResponse = sendPostRequest(endpoint, &quot;&quot;);</span>
             
             // Process movie selection response
-<span class="nc" id="L643">            boolean isSelectSuccess = false;</span>
+<span class="nc" id="L644">            boolean isSelectSuccess = false;</span>
             
             // Check new API response format
-<span class="nc bnc" id="L646" title="All 2 branches missed.">            if (selectResponse.containsKey(&quot;code&quot;)) {</span>
-<span class="nc" id="L647">                Long code = (Long) selectResponse.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L648" title="All 4 branches missed.">                isSelectSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc" id="L649">            } </span>
+<span class="nc bnc" id="L647" title="All 2 branches missed.">            if (selectResponse.containsKey(&quot;code&quot;)) {</span>
+<span class="nc" id="L648">                Long code = (Long) selectResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L649" title="All 4 branches missed.">                isSelectSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc" id="L650">            } </span>
             // Check old API response format
-<span class="nc bnc" id="L651" title="All 2 branches missed.">            else if (selectResponse.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L652">                isSelectSuccess = (boolean) selectResponse.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L652" title="All 2 branches missed.">            else if (selectResponse.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L653">                isSelectSuccess = (boolean) selectResponse.get(&quot;success&quot;);</span>
             }
             
-<span class="nc bnc" id="L655" title="All 2 branches missed.">            if (isSelectSuccess) {</span>
-<span class="nc" id="L656">                System.out.println(&quot;Movie selected successfully: &quot; + selectedMovie.get(&quot;title&quot;));</span>
-<span class="nc" id="L657">                lastMovieTitle = (String) selectedMovie.get(&quot;title&quot;);</span>
+<span class="nc bnc" id="L656" title="All 2 branches missed.">            if (isSelectSuccess) {</span>
+<span class="nc" id="L657">                System.out.println(&quot;Movie selected successfully: &quot; + selectedMovie.get(&quot;title&quot;));</span>
+<span class="nc" id="L658">                lastMovieTitle = (String) selectedMovie.get(&quot;title&quot;);</span>
                 
                 // Check if the game is over after this selection
-<span class="nc" id="L660">                getGameStatus();</span>
+<span class="nc" id="L661">                getGameStatus();</span>
             } else {
-<span class="nc" id="L662">                String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L663" title="All 2 branches missed.">                if (selectResponse.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L664">                    errorMessage = (String) selectResponse.get(&quot;message&quot;);</span>
+<span class="nc" id="L663">                String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L664" title="All 2 branches missed.">                if (selectResponse.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L665">                    errorMessage = (String) selectResponse.get(&quot;message&quot;);</span>
                 }
-<span class="nc" id="L666">                System.out.println(&quot;Failed to select movie: &quot; + errorMessage);</span>
+<span class="nc" id="L667">                System.out.println(&quot;Failed to select movie: &quot; + errorMessage);</span>
                 
                 // Display more detailed error if available
-<span class="nc bnc" id="L669" title="All 2 branches missed.">                if (selectResponse.containsKey(&quot;error&quot;)) {</span>
-<span class="nc" id="L670">                    System.out.println(&quot;Error details: &quot; + selectResponse.get(&quot;error&quot;));</span>
+<span class="nc bnc" id="L670" title="All 2 branches missed.">                if (selectResponse.containsKey(&quot;error&quot;)) {</span>
+<span class="nc" id="L671">                    System.out.println(&quot;Error details: &quot; + selectResponse.get(&quot;error&quot;));</span>
                 }
             }
-<span class="nc" id="L673">        } else {</span>
-<span class="nc" id="L674">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L675" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L676">                errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc" id="L674">        } else {</span>
+<span class="nc" id="L675">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L676" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L677">                errorMessage = (String) response.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L678">            System.out.println(&quot;Failed to search movies: &quot; + errorMessage);</span>
+<span class="nc" id="L679">            System.out.println(&quot;Failed to search movies: &quot; + errorMessage);</span>
         }
-<span class="nc" id="L680">    }</span>
+<span class="nc" id="L681">    }</span>
     
     private static void useAbility() throws IOException, ParseException {
-<span class="nc bnc" id="L683" title="All 2 branches missed.">        if (!gameStarted) {</span>
-<span class="nc" id="L684">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
-<span class="nc" id="L685">            return;</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L685">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L686">            return;</span>
         }
         
         // Get game status first to check player state
-<span class="nc" id="L689">        String statusEndpoint = &quot;/game/status&quot;;</span>
-<span class="nc" id="L690">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
+<span class="nc" id="L690">        String statusEndpoint = &quot;/game/status&quot;;</span>
+<span class="nc" id="L691">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
         
         // Process status response
-<span class="nc" id="L693">        boolean isStatusSuccess = false;</span>
-<span class="nc" id="L694">        JSONObject statusData = null;</span>
+<span class="nc" id="L694">        boolean isStatusSuccess = false;</span>
+<span class="nc" id="L695">        JSONObject statusData = null;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L697" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L698">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L699" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc bnc" id="L700" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
-<span class="nc" id="L701">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L698" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L699">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L700" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc bnc" id="L701" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
+<span class="nc" id="L702">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
-<span class="nc" id="L703">        } </span>
+<span class="nc" id="L704">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L705" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L706">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
-<span class="nc bnc" id="L707" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L708">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L706" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L707">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L708" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L709">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
         }
         
-<span class="nc bnc" id="L712" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
-<span class="nc" id="L713">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
+<span class="nc bnc" id="L713" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
+<span class="nc" id="L714">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
             
-<span class="nc bnc" id="L715" title="All 2 branches missed.">            if (gameOver) {</span>
-<span class="nc" id="L716">                System.out.println(&quot;Game is already over. Cannot use abilities.&quot;);</span>
-<span class="nc bnc" id="L717" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
-<span class="nc" id="L718">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
+<span class="nc bnc" id="L716" title="All 2 branches missed.">            if (gameOver) {</span>
+<span class="nc" id="L717">                System.out.println(&quot;Game is already over. Cannot use abilities.&quot;);</span>
+<span class="nc bnc" id="L718" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
+<span class="nc" id="L719">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
                 }
-<span class="nc" id="L720">                return;</span>
+<span class="nc" id="L721">                return;</span>
             }
             
             // Get current player info
-<span class="nc" id="L724">            JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
-<span class="nc" id="L725">            JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
+<span class="nc" id="L725">            JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
+<span class="nc" id="L726">            JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
             
             // Check if player is blocked
-<span class="nc bnc" id="L728" title="All 4 branches missed.">            if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
-<span class="nc" id="L729">                System.out.println(&quot;You are blocked for this turn and cannot use abilities.&quot;);</span>
-<span class="nc" id="L730">                return;</span>
+<span class="nc bnc" id="L729" title="All 4 branches missed.">            if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
+<span class="nc" id="L730">                System.out.println(&quot;You are blocked for this turn and cannot use abilities.&quot;);</span>
+<span class="nc" id="L731">                return;</span>
             }
-<span class="nc" id="L732">        } else {</span>
-<span class="nc" id="L733">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L734" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L735">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
+<span class="nc" id="L733">        } else {</span>
+<span class="nc" id="L734">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L735" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L736">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L737">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
-<span class="nc" id="L738">            return;</span>
+<span class="nc" id="L738">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
+<span class="nc" id="L739">            return;</span>
         }
         
-<span class="nc" id="L741">        System.out.println(&quot;\n=== Use Ability ===&quot;);</span>
-<span class="nc" id="L742">        System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
+<span class="nc" id="L742">        System.out.println(&quot;\n=== Use Ability（Only One Ability per Game)===&quot;);</span>
+<span class="nc" id="L743">        System.out.println(&quot;Current player: &quot; + getCurrentPlayerName());</span>
         
         // Get current player info from status data
-<span class="nc" id="L745">        JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
-<span class="nc" id="L746">        JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
+<span class="nc" id="L746">        JSONArray players = (JSONArray) statusData.get(&quot;players&quot;);</span>
+<span class="nc" id="L747">        JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
         
         // Check available abilities
-<span class="nc" id="L749">        boolean skipAvailable = (boolean) currentPlayer.get(&quot;skipAvailable&quot;);</span>
-<span class="nc" id="L750">        boolean blockAvailable = (boolean) currentPlayer.get(&quot;blockAvailable&quot;);</span>
+<span class="nc" id="L750">        boolean skipAvailable = (boolean) currentPlayer.get(&quot;skipAvailable&quot;);</span>
+<span class="nc" id="L751">        boolean blockAvailable = (boolean) currentPlayer.get(&quot;blockAvailable&quot;);</span>
         
-<span class="nc bnc" id="L752" title="All 4 branches missed.">        if (!skipAvailable &amp;&amp; !blockAvailable) {</span>
-<span class="nc" id="L753">            System.out.println(&quot;You have already used your special abilities.&quot;);</span>
-<span class="nc" id="L754">            return;</span>
+<span class="nc bnc" id="L753" title="All 4 branches missed.">        if (!skipAvailable &amp;&amp; !blockAvailable) {</span>
+<span class="nc" id="L754">            System.out.println(&quot;You have already used your special abilities.&quot;);</span>
+<span class="nc" id="L755">            return;</span>
         }
         
-<span class="nc bnc" id="L757" title="All 2 branches missed.">        System.out.println(skipAvailable ? &quot;1. Skip (skip opponent's next turn)&quot; : &quot;1. Skip (not available)&quot;);</span>
-<span class="nc bnc" id="L758" title="All 2 branches missed.">        System.out.println(blockAvailable ? &quot;2. Block (block opponent's next move)&quot; : &quot;2. Block (not available)&quot;);</span>
-<span class="nc" id="L759">        System.out.println(&quot;3. Cancel&quot;);</span>
-<span class="nc" id="L760">        System.out.print(&quot;Choose ability: &quot;);</span>
+<span class="nc bnc" id="L758" title="All 2 branches missed.">        System.out.println(skipAvailable ? &quot;1. Skip (skip opponent's next turn)&quot; : &quot;1. Skip (not available)&quot;);</span>
+<span class="nc bnc" id="L759" title="All 2 branches missed.">        System.out.println(blockAvailable ? &quot;2. Block (block opponent's next move)&quot; : &quot;2. Block (not available)&quot;);</span>
+<span class="nc" id="L760">        System.out.println(&quot;3. Cancel&quot;);</span>
+<span class="nc" id="L761">        System.out.print(&quot;Choose ability: &quot;);</span>
         
-<span class="nc" id="L762">        int choice = getUserChoice(1, 3);</span>
+<span class="nc" id="L763">        int choice = getUserChoice(1, 3);</span>
         
-<span class="nc bnc" id="L764" title="All 2 branches missed.">        if (choice == 3) {</span>
-<span class="nc" id="L765">            System.out.println(&quot;Cancelled&quot;);</span>
-<span class="nc" id="L766">            return;</span>
+<span class="nc bnc" id="L765" title="All 2 branches missed.">        if (choice == 3) {</span>
+<span class="nc" id="L766">            System.out.println(&quot;Cancelled&quot;);</span>
+<span class="nc" id="L767">            return;</span>
         }
         
         // Check if selected ability is available
-<span class="nc bnc" id="L770" title="All 8 branches missed.">        if ((choice == 1 &amp;&amp; !skipAvailable) || (choice == 2 &amp;&amp; !blockAvailable)) {</span>
-<span class="nc" id="L771">            System.out.println(&quot;This ability is not available.&quot;);</span>
-<span class="nc" id="L772">            return;</span>
+<span class="nc bnc" id="L771" title="All 8 branches missed.">        if ((choice == 1 &amp;&amp; !skipAvailable) || (choice == 2 &amp;&amp; !blockAvailable)) {</span>
+<span class="nc" id="L772">            System.out.println(&quot;This ability is not available.&quot;);</span>
+<span class="nc" id="L773">            return;</span>
         }
         
-<span class="nc bnc" id="L775" title="All 2 branches missed.">        String endpoint = choice == 1 ? &quot;/actions/skip&quot; : &quot;/actions/block&quot;;</span>
-<span class="nc" id="L776">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
+<span class="nc bnc" id="L776" title="All 2 branches missed.">        String endpoint = choice == 1 ? &quot;/actions/skip&quot; : &quot;/actions/block&quot;;</span>
+<span class="nc" id="L777">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
         
         // Process ability usage response
-<span class="nc" id="L779">        boolean isSuccess = false;</span>
+<span class="nc" id="L780">        boolean isSuccess = false;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L782" title="All 2 branches missed.">        if (response.containsKey(&quot;code&quot;)) {</span>
-<span class="nc" id="L783">            Long code = (Long) response.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L784" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc" id="L785">        } </span>
+<span class="nc bnc" id="L783" title="All 2 branches missed.">        if (response.containsKey(&quot;code&quot;)) {</span>
+<span class="nc" id="L784">            Long code = (Long) response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L785" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc" id="L786">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L787" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L788">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L788" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L789">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
         }
         
-<span class="nc bnc" id="L791" title="All 2 branches missed.">        if (isSuccess) {</span>
-<span class="nc bnc" id="L792" title="All 2 branches missed.">            System.out.println(&quot;Ability used successfully: &quot; + (choice == 1 ? &quot;Skip&quot; : &quot;Block&quot;));</span>
-<span class="nc" id="L793">            System.out.println(&quot;Remember to end your turn by selecting 'Next Player' from the menu.&quot;);</span>
+<span class="nc bnc" id="L792" title="All 2 branches missed.">        if (isSuccess) {</span>
+<span class="nc bnc" id="L793" title="All 2 branches missed.">            System.out.println(&quot;Ability used successfully: &quot; + (choice == 1 ? &quot;Skip&quot; : &quot;Block&quot;));</span>
+<span class="nc" id="L794">            System.out.println(&quot;Remember to end your turn by selecting 'Next Player' from the menu.&quot;);</span>
         } else {
-<span class="nc" id="L795">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L796" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L797">                errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc" id="L796">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L797" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L798">                errorMessage = (String) response.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L799">            System.out.println(&quot;Failed to use ability: &quot; + errorMessage);</span>
+<span class="nc" id="L800">            System.out.println(&quot;Failed to use ability: &quot; + errorMessage);</span>
             
             // Display more detailed error if available
-<span class="nc bnc" id="L802" title="All 2 branches missed.">            if (response.containsKey(&quot;error&quot;)) {</span>
-<span class="nc" id="L803">                System.out.println(&quot;Error details: &quot; + response.get(&quot;error&quot;));</span>
+<span class="nc bnc" id="L803" title="All 2 branches missed.">            if (response.containsKey(&quot;error&quot;)) {</span>
+<span class="nc" id="L804">                System.out.println(&quot;Error details: &quot; + response.get(&quot;error&quot;));</span>
             }
         }
-<span class="nc" id="L806">    }</span>
+<span class="nc" id="L807">    }</span>
     
     private static void nextPlayer() throws IOException, ParseException {
-<span class="nc bnc" id="L809" title="All 2 branches missed.">        if (!gameStarted) {</span>
-<span class="nc" id="L810">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
-<span class="nc" id="L811">            return;</span>
+<span class="nc bnc" id="L810" title="All 2 branches missed.">        if (!gameStarted) {</span>
+<span class="nc" id="L811">            System.out.println(&quot;Game not started yet. Please start the game first (option 2)&quot;);</span>
+<span class="nc" id="L812">            return;</span>
         }
         
         // Get game status first to check if game is over
-<span class="nc" id="L815">        String statusEndpoint = &quot;/game/status&quot;;</span>
-<span class="nc" id="L816">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
+<span class="nc" id="L816">        String statusEndpoint = &quot;/game/status&quot;;</span>
+<span class="nc" id="L817">        JSONObject statusResponse = sendGetRequest(statusEndpoint);</span>
         
         // Process status response
-<span class="nc" id="L819">        boolean isStatusSuccess = false;</span>
-<span class="nc" id="L820">        JSONObject statusData = null;</span>
+<span class="nc" id="L820">        boolean isStatusSuccess = false;</span>
+<span class="nc" id="L821">        JSONObject statusData = null;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L823" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L824">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L825" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc bnc" id="L826" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
-<span class="nc" id="L827">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L824" title="All 4 branches missed.">        if (statusResponse.containsKey(&quot;code&quot;) &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L825">            Long code = (Long) statusResponse.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L826" title="All 4 branches missed.">            isStatusSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc bnc" id="L827" title="All 2 branches missed.">            if (isStatusSuccess) {</span>
+<span class="nc" id="L828">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
-<span class="nc" id="L829">        } </span>
+<span class="nc" id="L830">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L831" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L832">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
-<span class="nc bnc" id="L833" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L834">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L832" title="All 2 branches missed.">        else if (statusResponse.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L833">            isStatusSuccess = (boolean) statusResponse.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L834" title="All 4 branches missed.">            if (isStatusSuccess &amp;&amp; statusResponse.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L835">                statusData = (JSONObject) statusResponse.get(&quot;data&quot;);</span>
             }
         }
         
-<span class="nc bnc" id="L838" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
-<span class="nc" id="L839">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
+<span class="nc bnc" id="L839" title="All 4 branches missed.">        if (isStatusSuccess &amp;&amp; statusData != null) {</span>
+<span class="nc" id="L840">            boolean gameOver = (boolean) statusData.get(&quot;gameOver&quot;);</span>
             
-<span class="nc bnc" id="L841" title="All 2 branches missed.">            if (gameOver) {</span>
-<span class="nc" id="L842">                System.out.println(&quot;Game is already over. Cannot switch to next player.&quot;);</span>
-<span class="nc bnc" id="L843" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
-<span class="nc" id="L844">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
+<span class="nc bnc" id="L842" title="All 2 branches missed.">            if (gameOver) {</span>
+<span class="nc" id="L843">                System.out.println(&quot;Game is already over. Cannot switch to next player.&quot;);</span>
+<span class="nc bnc" id="L844" title="All 2 branches missed.">                if (statusData.containsKey(&quot;winner&quot;)) {</span>
+<span class="nc" id="L845">                    System.out.println(&quot;Winner: &quot; + statusData.get(&quot;winner&quot;));</span>
                 }
-<span class="nc" id="L846">                return;</span>
+<span class="nc" id="L847">                return;</span>
             }
-<span class="nc" id="L848">        } else {</span>
-<span class="nc" id="L849">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L850" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L851">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
+<span class="nc" id="L849">        } else {</span>
+<span class="nc" id="L850">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L851" title="All 2 branches missed.">            if (statusResponse.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L852">                errorMessage = (String) statusResponse.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L853">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
-<span class="nc" id="L854">            return;</span>
+<span class="nc" id="L854">            System.out.println(&quot;Failed to get game status: &quot; + errorMessage);</span>
+<span class="nc" id="L855">            return;</span>
         }
         
-<span class="nc" id="L857">        System.out.println(&quot;\n=== Next Player ===&quot;);</span>
+<span class="nc" id="L858">        System.out.println(&quot;\n=== Next Player ===&quot;);</span>
         
-<span class="nc" id="L859">        String endpoint = &quot;/actions/next&quot;;</span>
-<span class="nc" id="L860">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
+<span class="nc" id="L860">        String endpoint = &quot;/actions/next&quot;;</span>
+<span class="nc" id="L861">        JSONObject response = sendPostRequest(endpoint, &quot;&quot;);</span>
         
         // Process next player response
-<span class="nc" id="L863">        boolean isSuccess = false;</span>
-<span class="nc" id="L864">        JSONObject data = null;</span>
+<span class="nc" id="L864">        boolean isSuccess = false;</span>
+<span class="nc" id="L865">        JSONObject data = null;</span>
         
         // Check new API response format
-<span class="nc bnc" id="L867" title="All 4 branches missed.">        if (response.containsKey(&quot;code&quot;) &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L868">            Long code = (Long) response.get(&quot;code&quot;);</span>
-<span class="nc bnc" id="L869" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
-<span class="nc bnc" id="L870" title="All 2 branches missed.">            if (isSuccess) {</span>
-<span class="nc" id="L871">                data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L868" title="All 4 branches missed.">        if (response.containsKey(&quot;code&quot;) &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L869">            Long code = (Long) response.get(&quot;code&quot;);</span>
+<span class="nc bnc" id="L870" title="All 4 branches missed.">            isSuccess = (code != null &amp;&amp; code == 200);</span>
+<span class="nc bnc" id="L871" title="All 2 branches missed.">            if (isSuccess) {</span>
+<span class="nc" id="L872">                data = (JSONObject) response.get(&quot;data&quot;);</span>
             }
-<span class="nc" id="L873">        } </span>
+<span class="nc" id="L874">        } </span>
         // Check old API response format
-<span class="nc bnc" id="L875" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
-<span class="nc" id="L876">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
-<span class="nc bnc" id="L877" title="All 4 branches missed.">            if (isSuccess &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
-<span class="nc" id="L878">                data = (JSONObject) response.get(&quot;data&quot;);</span>
+<span class="nc bnc" id="L876" title="All 2 branches missed.">        else if (response.containsKey(&quot;success&quot;)) {</span>
+<span class="nc" id="L877">            isSuccess = (boolean) response.get(&quot;success&quot;);</span>
+<span class="nc bnc" id="L878" title="All 4 branches missed.">            if (isSuccess &amp;&amp; response.containsKey(&quot;data&quot;)) {</span>
+<span class="nc" id="L879">                data = (JSONObject) response.get(&quot;data&quot;);</span>
             }
         }
         
-<span class="nc bnc" id="L882" title="All 4 branches missed.">        if (isSuccess &amp;&amp; data != null) {</span>
-<span class="nc" id="L883">            currentPlayerIndex = ((Long) data.get(&quot;currentPlayerIndex&quot;)).intValue();</span>
+<span class="nc bnc" id="L883" title="All 4 branches missed.">        if (isSuccess &amp;&amp; data != null) {</span>
+<span class="nc" id="L884">            currentPlayerIndex = ((Long) data.get(&quot;currentPlayerIndex&quot;)).intValue();</span>
             
-<span class="nc" id="L885">            System.out.println(&quot;Switched to next player: &quot; + getCurrentPlayerName());</span>
+<span class="nc" id="L886">            System.out.println(&quot;Switched to next player: &quot; + getCurrentPlayerName());</span>
             
             // Check if the next player is blocked or skipped
-<span class="nc bnc" id="L888" title="All 2 branches missed.">            if (data.containsKey(&quot;players&quot;)) {</span>
-<span class="nc" id="L889">                JSONArray players = (JSONArray) data.get(&quot;players&quot;);</span>
-<span class="nc" id="L890">                JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
+<span class="nc bnc" id="L889" title="All 2 branches missed.">            if (data.containsKey(&quot;players&quot;)) {</span>
+<span class="nc" id="L890">                JSONArray players = (JSONArray) data.get(&quot;players&quot;);</span>
+<span class="nc" id="L891">                JSONObject currentPlayer = (JSONObject) players.get(currentPlayerIndex);</span>
                 
-<span class="nc bnc" id="L892" title="All 4 branches missed.">                if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
-<span class="nc" id="L893">                    System.out.println(&quot;Note: &quot; + getCurrentPlayerName() + &quot; is blocked for this turn.&quot;);</span>
-<span class="nc" id="L894">                    System.out.println(&quot;They can only use the 'Next Player' option.&quot;);</span>
-<span class="nc bnc" id="L895" title="All 4 branches missed.">                } else if (currentPlayer.containsKey(&quot;isSkipped&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isSkipped&quot;)) {</span>
-<span class="nc" id="L896">                    System.out.println(&quot;Note: &quot; + getCurrentPlayerName() + &quot; is skipped for this turn.&quot;);</span>
-<span class="nc" id="L897">                    System.out.println(&quot;They can only use the 'Next Player' option.&quot;);</span>
+<span class="nc bnc" id="L893" title="All 4 branches missed.">                if (currentPlayer.containsKey(&quot;isBlocked&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isBlocked&quot;)) {</span>
+<span class="nc" id="L894">                    System.out.println(&quot;Note: &quot; + getCurrentPlayerName() + &quot; is blocked for this turn.&quot;);</span>
+<span class="nc" id="L895">                    System.out.println(&quot;They can only use the 'Next Player' option.&quot;);</span>
+<span class="nc bnc" id="L896" title="All 4 branches missed.">                } else if (currentPlayer.containsKey(&quot;isSkipped&quot;) &amp;&amp; (boolean) currentPlayer.get(&quot;isSkipped&quot;)) {</span>
+<span class="nc" id="L897">                    System.out.println(&quot;Note: &quot; + getCurrentPlayerName() + &quot; is skipped for this turn.&quot;);</span>
+<span class="nc" id="L898">                    System.out.println(&quot;They can only use the 'Next Player' option.&quot;);</span>
                 }
-<span class="nc" id="L899">            }</span>
+<span class="nc" id="L900">            }</span>
         } else {
-<span class="nc" id="L901">            String errorMessage = &quot;Unknown error&quot;;</span>
-<span class="nc bnc" id="L902" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
-<span class="nc" id="L903">                errorMessage = (String) response.get(&quot;message&quot;);</span>
+<span class="nc" id="L902">            String errorMessage = &quot;Unknown error&quot;;</span>
+<span class="nc bnc" id="L903" title="All 2 branches missed.">            if (response.containsKey(&quot;message&quot;)) {</span>
+<span class="nc" id="L904">                errorMessage = (String) response.get(&quot;message&quot;);</span>
             }
-<span class="nc" id="L905">            System.out.println(&quot;Failed to switch to next player: &quot; + errorMessage);</span>
+<span class="nc" id="L906">            System.out.println(&quot;Failed to switch to next player: &quot; + errorMessage);</span>
             
             // Display more detailed error if available
-<span class="nc bnc" id="L908" title="All 2 branches missed.">            if (response.containsKey(&quot;error&quot;)) {</span>
-<span class="nc" id="L909">                System.out.println(&quot;Error details: &quot; + response.get(&quot;error&quot;));</span>
+<span class="nc bnc" id="L909" title="All 2 branches missed.">            if (response.containsKey(&quot;error&quot;)) {</span>
+<span class="nc" id="L910">                System.out.println(&quot;Error details: &quot; + response.get(&quot;error&quot;));</span>
             }
         }
-<span class="nc" id="L912">    }</span>
+<span class="nc" id="L913">    }</span>
     
     private static String getCurrentPlayerName() {
-<span class="nc bnc" id="L915" title="All 2 branches missed.">        return currentPlayerIndex == 0 ? player1Name : player2Name;</span>
+<span class="nc bnc" id="L916" title="All 2 branches missed.">        return currentPlayerIndex == 0 ? player1Name : player2Name;</span>
     }
     
     private static JSONObject sendGetRequest(String endpoint) throws IOException, ParseException {
-<span class="nc" id="L919">        URL url = new URL(API_BASE_URL + endpoint);</span>
-<span class="nc" id="L920">        HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
-<span class="nc" id="L921">        connection.setRequestMethod(&quot;GET&quot;);</span>
+<span class="nc" id="L920">        URL url = new URL(API_BASE_URL + endpoint);</span>
+<span class="nc" id="L921">        HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L922">        connection.setRequestMethod(&quot;GET&quot;);</span>
         
-<span class="nc" id="L923">        return handleResponse(connection);</span>
+<span class="nc" id="L924">        return handleResponse(connection);</span>
     }
     
     private static JSONObject sendPostRequest(String endpoint, String body) throws IOException, ParseException {
         try {
-<span class="nc" id="L928">            URL url = new URL(API_BASE_URL + endpoint);</span>
-<span class="nc" id="L929">            HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
-<span class="nc" id="L930">            connection.setRequestMethod(&quot;POST&quot;);</span>
-<span class="nc" id="L931">            connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
-<span class="nc" id="L932">            connection.setDoOutput(true);</span>
-<span class="nc" id="L933">            connection.setConnectTimeout(5000); // 5 seconds timeout</span>
-<span class="nc" id="L934">            connection.setReadTimeout(5000);    // 5 seconds timeout</span>
+<span class="nc" id="L929">            URL url = new URL(API_BASE_URL + endpoint);</span>
+<span class="nc" id="L930">            HttpURLConnection connection = (HttpURLConnection) url.openConnection();</span>
+<span class="nc" id="L931">            connection.setRequestMethod(&quot;POST&quot;);</span>
+<span class="nc" id="L932">            connection.setRequestProperty(&quot;Content-Type&quot;, &quot;application/json&quot;);</span>
+<span class="nc" id="L933">            connection.setDoOutput(true);</span>
+<span class="nc" id="L934">            connection.setConnectTimeout(5000); // 5 seconds timeout</span>
+<span class="nc" id="L935">            connection.setReadTimeout(5000);    // 5 seconds timeout</span>
             
-<span class="nc bnc" id="L936" title="All 4 branches missed.">            if (body != null &amp;&amp; !body.isEmpty()) {</span>
-<span class="nc" id="L937">                try (OutputStream os = connection.getOutputStream()) {</span>
-<span class="nc" id="L938">                    byte[] input = body.getBytes(&quot;utf-8&quot;);</span>
-<span class="nc" id="L939">                    os.write(input, 0, input.length);</span>
-<span class="nc" id="L940">                    os.flush();</span>
+<span class="nc bnc" id="L937" title="All 4 branches missed.">            if (body != null &amp;&amp; !body.isEmpty()) {</span>
+<span class="nc" id="L938">                try (OutputStream os = connection.getOutputStream()) {</span>
+<span class="nc" id="L939">                    byte[] input = body.getBytes(&quot;utf-8&quot;);</span>
+<span class="nc" id="L940">                    os.write(input, 0, input.length);</span>
+<span class="nc" id="L941">                    os.flush();</span>
                 }
             }
             
-<span class="nc" id="L944">            return handleResponse(connection);</span>
-<span class="nc" id="L945">        } catch (Exception e) {</span>
-<span class="nc" id="L946">            System.out.println(&quot;Error sending POST request: &quot; + e.getMessage());</span>
-<span class="nc" id="L947">            e.printStackTrace();</span>
+<span class="nc" id="L945">            return handleResponse(connection);</span>
+<span class="nc" id="L946">        } catch (Exception e) {</span>
+<span class="nc" id="L947">            System.out.println(&quot;Error sending POST request: &quot; + e.getMessage());</span>
+<span class="nc" id="L948">            e.printStackTrace();</span>
             
             // Create an error JSON object
-<span class="nc" id="L950">            JSONObject errorJson = new JSONObject();</span>
-<span class="nc" id="L951">            errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
-<span class="nc" id="L952">            errorJson.put(&quot;message&quot;, &quot;Error sending request: &quot; + e.getMessage());</span>
-<span class="nc" id="L953">            return errorJson;</span>
+<span class="nc" id="L951">            JSONObject errorJson = new JSONObject();</span>
+<span class="nc" id="L952">            errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
+<span class="nc" id="L953">            errorJson.put(&quot;message&quot;, &quot;Error sending request: &quot; + e.getMessage());</span>
+<span class="nc" id="L954">            return errorJson;</span>
         }
     }
     
     private static JSONObject handleResponse(HttpURLConnection connection) throws IOException, ParseException {
-<span class="nc" id="L958">        int responseCode = connection.getResponseCode();</span>
+<span class="nc" id="L959">        int responseCode = connection.getResponseCode();</span>
         
         // Read the response body regardless of status code
-<span class="nc bnc" id="L961" title="All 2 branches missed.">        InputStream stream = responseCode &lt; 400 ? connection.getInputStream() : connection.getErrorStream();</span>
-<span class="nc" id="L962">        BufferedReader in = new BufferedReader(new InputStreamReader(stream, &quot;UTF-8&quot;));</span>
+<span class="nc bnc" id="L962" title="All 2 branches missed.">        InputStream stream = responseCode &lt; 400 ? connection.getInputStream() : connection.getErrorStream();</span>
+<span class="nc" id="L963">        BufferedReader in = new BufferedReader(new InputStreamReader(stream, &quot;UTF-8&quot;));</span>
         String inputLine;
-<span class="nc" id="L964">        StringBuilder response = new StringBuilder();</span>
+<span class="nc" id="L965">        StringBuilder response = new StringBuilder();</span>
         
-<span class="nc bnc" id="L966" title="All 2 branches missed.">        while ((inputLine = in.readLine()) != null) {</span>
-<span class="nc" id="L967">            response.append(inputLine);</span>
+<span class="nc bnc" id="L967" title="All 2 branches missed.">        while ((inputLine = in.readLine()) != null) {</span>
+<span class="nc" id="L968">            response.append(inputLine);</span>
         }
-<span class="nc" id="L969">        in.close();</span>
+<span class="nc" id="L970">        in.close();</span>
         
-<span class="nc" id="L971">        String responseBody = response.toString();</span>
+<span class="nc" id="L972">        String responseBody = response.toString();</span>
         
         // Try to parse as JSON
         try {
-<span class="nc bnc" id="L975" title="All 4 branches missed.">            if (responseBody != null &amp;&amp; !responseBody.isEmpty()) {</span>
-<span class="nc" id="L976">                return (JSONObject) jsonParser.parse(responseBody);</span>
+<span class="nc bnc" id="L976" title="All 4 branches missed.">            if (responseBody != null &amp;&amp; !responseBody.isEmpty()) {</span>
+<span class="nc" id="L977">                return (JSONObject) jsonParser.parse(responseBody);</span>
             } else {
                 // Create a simple error JSON if response is empty
-<span class="nc" id="L979">                JSONObject errorJson = new JSONObject();</span>
-<span class="nc" id="L980">                errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
-<span class="nc" id="L981">                errorJson.put(&quot;message&quot;, &quot;Empty response from server&quot;);</span>
-<span class="nc" id="L982">                return errorJson;</span>
+<span class="nc" id="L980">                JSONObject errorJson = new JSONObject();</span>
+<span class="nc" id="L981">                errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
+<span class="nc" id="L982">                errorJson.put(&quot;message&quot;, &quot;Empty response from server&quot;);</span>
+<span class="nc" id="L983">                return errorJson;</span>
             }
-<span class="nc" id="L984">        } catch (ParseException e) {</span>
+<span class="nc" id="L985">        } catch (ParseException e) {</span>
             // If not valid JSON, create an error JSON object
-<span class="nc" id="L986">            System.out.println(&quot;Failed to parse response as JSON: &quot; + e.getMessage());</span>
-<span class="nc" id="L987">            JSONObject errorJson = new JSONObject();</span>
-<span class="nc" id="L988">            errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
-<span class="nc" id="L989">            errorJson.put(&quot;message&quot;, &quot;Invalid JSON response: &quot; + responseBody);</span>
-<span class="nc" id="L990">            return errorJson;</span>
+<span class="nc" id="L987">            System.out.println(&quot;Failed to parse response as JSON: &quot; + e.getMessage());</span>
+<span class="nc" id="L988">            JSONObject errorJson = new JSONObject();</span>
+<span class="nc" id="L989">            errorJson.put(&quot;success&quot;, Boolean.FALSE);</span>
+<span class="nc" id="L990">            errorJson.put(&quot;message&quot;, &quot;Invalid JSON response: &quot; + responseBody);</span>
+<span class="nc" id="L991">            return errorJson;</span>
         }
     }
 }
