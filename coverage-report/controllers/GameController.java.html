@@ -1,0 +1,592 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">controllers</a> &gt; <span class="el_source">GameController.java</span></div><h1>GameController.java</h1><pre class="source lang-java linenums">package controllers;
+/*
+ * test for GameController.java
+ */
+import api.responses.ApiResponse;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import factories.ClientFactory;
+import factories.ServiceFactory;
+import models.Client;
+import models.Movie;
+import models.Autocomplete;
+import services.GameService;
+import services.MovieService;
+import services.ClientService;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
+
+/**
+ * Game controller, handles game logic and implements HTTP handler functionality
+ */
+public class GameController implements HttpHandler {
+    private final GameService gameService;
+    private final MovieService movieService;
+    private final ClientService clientService;
+    private final Autocomplete autocomplete;
+    
+    /**
+     * Constructor
+     */
+<span class="fc" id="L34">    public GameController() {</span>
+<span class="fc" id="L35">        this.gameService = ServiceFactory.getGameService();</span>
+<span class="fc" id="L36">        this.movieService = ServiceFactory.getMovieService();</span>
+<span class="fc" id="L37">        this.clientService = ServiceFactory.getClientService();</span>
+<span class="fc" id="L38">        this.autocomplete = new Autocomplete();</span>
+        
+        // Initialize autocomplete with all movies
+<span class="fc" id="L41">        List&lt;Movie&gt; allMovies = movieService.getAllMovies();</span>
+<span class="fc" id="L42">        System.out.println(&quot;Initializing autocomplete with &quot; + allMovies.size() + &quot; movies&quot;);</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (Movie movie : allMovies) {</span>
+<span class="fc" id="L44">            autocomplete.insert(movie);</span>
+<span class="fc" id="L45">        }</span>
+<span class="fc" id="L46">    }</span>
+    
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+<span class="fc" id="L50">        String path = exchange.getRequestURI().getPath();</span>
+        // Remove /api prefix, as HttpServer has already handled this part
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        if (path.startsWith(&quot;/api&quot;)) {</span>
+<span class="fc" id="L53">            path = path.substring(4);</span>
+        }
+        
+<span class="fc" id="L56">        String method = exchange.getRequestMethod();</span>
+<span class="fc" id="L57">        String query = exchange.getRequestURI().getQuery();</span>
+        
+        // Create a key in the format &quot;METHOD PATH&quot; for routing
+<span class="fc" id="L60">        String routeKey = method + &quot; &quot; + path;</span>
+        
+        try {
+<span class="pc bpc" id="L63" title="8 of 9 branches missed.">            switch (routeKey) {</span>
+                case &quot;POST /game/start&quot;:
+<span class="nc" id="L65">                    handleStartGame(exchange);</span>
+<span class="nc" id="L66">                    break;</span>
+                case &quot;GET /game/status&quot;:
+<span class="fc" id="L68">                    handleGetGameStatus(exchange);</span>
+<span class="fc" id="L69">                    break;</span>
+                case &quot;GET /game/check-time&quot;:
+<span class="nc" id="L71">                    handleCheckTime(exchange);</span>
+<span class="nc" id="L72">                    break;</span>
+                case &quot;GET /movies/search&quot;:
+<span class="nc" id="L74">                    handleSearchMovies(exchange, query);</span>
+<span class="nc" id="L75">                    break;</span>
+                case &quot;POST /movies/select&quot;:
+<span class="nc" id="L77">                    handleSelectMovie(exchange, query);</span>
+<span class="nc" id="L78">                    break;</span>
+                case &quot;POST /actions/skip&quot;:
+<span class="nc" id="L80">                    handleSkipAction(exchange);</span>
+<span class="nc" id="L81">                    break;</span>
+                case &quot;POST /actions/block&quot;:
+<span class="nc" id="L83">                    handleBlockAction(exchange);</span>
+<span class="nc" id="L84">                    break;</span>
+                case &quot;POST /actions/next&quot;:
+<span class="nc" id="L86">                    handleNextPlayer(exchange);</span>
+<span class="nc" id="L87">                    break;</span>
+                default:
+<span class="nc" id="L89">                    sendResponse(exchange, ApiResponse.error(404, &quot;Not found&quot;), 404);</span>
+                    break;
+            }
+<span class="nc" id="L92">        } catch (Exception e) {</span>
+<span class="nc" id="L93">            e.printStackTrace();</span>
+<span class="nc" id="L94">            sendResponse(exchange, ApiResponse.error(500, &quot;Internal server error: &quot; + e.getMessage()), 500);</span>
+<span class="fc" id="L95">        }</span>
+<span class="fc" id="L96">    }</span>
+    
+    /**
+     * Handle start game request
+     */
+    private void handleStartGame(HttpExchange exchange) throws IOException {
+        // Read request body
+<span class="fc" id="L103">        InputStream is = exchange.getRequestBody();</span>
+<span class="fc" id="L104">        Scanner s = new Scanner(is).useDelimiter(&quot;\\A&quot;);</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">        String requestBody = s.hasNext() ? s.next() : &quot;&quot;;</span>
+        
+<span class="fc" id="L107">        Map&lt;String, String&gt; params = parseRequestBody(requestBody);</span>
+<span class="fc" id="L108">        System.out.println(&quot;Parsed parameters: &quot; + params);</span>
+        
+        // Get parameters
+<span class="fc" id="L111">        String player1Name = params.getOrDefault(&quot;player1Name&quot;, &quot;Player1&quot;);</span>
+<span class="fc" id="L112">        String player1Genre = params.getOrDefault(&quot;player1Genre&quot;, &quot;sci-fi&quot;);</span>
+<span class="fc" id="L113">        String player2Name = params.getOrDefault(&quot;player2Name&quot;, &quot;Player2&quot;);</span>
+<span class="fc" id="L114">        String player2Genre = params.getOrDefault(&quot;player2Genre&quot;, &quot;action&quot;);</span>
+<span class="fc" id="L115">        int winThreshold = Integer.parseInt(params.getOrDefault(&quot;winThreshold&quot;, &quot;3&quot;));</span>
+        
+        // Create players
+<span class="fc" id="L118">        Client player1 = ClientFactory.createClient(player1Name, player1Genre, winThreshold);</span>
+<span class="fc" id="L119">        Client player2 = ClientFactory.createClient(player2Name, player2Genre, winThreshold);</span>
+        
+<span class="fc" id="L121">        List&lt;Client&gt; players = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L122">        players.add(player1);</span>
+<span class="fc" id="L123">        players.add(player2);</span>
+        
+        // Initialize game
+<span class="fc" id="L126">        Movie initialMovie = gameService.initGame(players);</span>
+        
+        // Check if a suitable initial movie was found
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">        if (initialMovie == null) {</span>
+            // No movie found that matches both players' genres
+<span class="nc" id="L131">            String errorMessage = &quot;No movie found that contains both players' target genres: '&quot; + </span>
+                                 player1Genre + &quot;' and '&quot; + player2Genre + &quot;'. Please choose different genres.&quot;;
+<span class="nc" id="L133">            sendResponse(exchange, ApiResponse.error(400, errorMessage), 400);</span>
+<span class="nc" id="L134">            return;</span>
+        }
+        
+        // Get game status
+<span class="fc" id="L138">        boolean gameOver = gameService.isGameOver();</span>
+<span class="fc" id="L139">        Client winner = gameService.getWinner();</span>
+<span class="fc" id="L140">        int turnCount = gameService.getTurnCount();</span>
+<span class="fc" id="L141">        int currentPlayerIndex = gameService.getCurrentPlayerIndex();</span>
+        
+        // Build response data
+<span class="fc" id="L144">        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</span>
+        
+        // Add player information
+<span class="fc" id="L147">        List&lt;Map&lt;String, Object&gt;&gt; playersData = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">        for (Client player : players) {</span>
+<span class="fc" id="L149">            Map&lt;String, Object&gt; playerData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L150">            playerData.put(&quot;name&quot;, player.getName());</span>
+<span class="fc" id="L151">            playerData.put(&quot;targetGenre&quot;, player.getTargetGenre());</span>
+<span class="fc" id="L152">            playerData.put(&quot;winThreshold&quot;, player.getWinThreshold());</span>
+<span class="fc" id="L153">            playerData.put(&quot;skipAvailable&quot;, player.isSkipAvailable());</span>
+<span class="fc" id="L154">            playerData.put(&quot;blockAvailable&quot;, player.isBlockAvailable());</span>
+            
+            // Add target genre movie count
+<span class="fc" id="L157">            int targetGenreCount = player.getGenreCount().getOrDefault(player.getWinGenre().toLowerCase(), 0);</span>
+<span class="fc" id="L158">            playerData.put(&quot;targetGenreCount&quot;, targetGenreCount);</span>
+            
+            // Add player's movies
+<span class="fc" id="L161">            List&lt;Map&lt;String, Object&gt;&gt; moviesData = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L162" title="All 2 branches covered.">            for (Movie movie : player.getMovies()) {</span>
+<span class="fc" id="L163">                Map&lt;String, Object&gt; movieData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L164">                movieData.put(&quot;id&quot;, movie.getId());</span>
+<span class="fc" id="L165">                movieData.put(&quot;title&quot;, movie.getTitle());</span>
+<span class="fc" id="L166">                movieData.put(&quot;releaseYear&quot;, movie.getReleaseYear());</span>
+<span class="fc" id="L167">                movieData.put(&quot;genre&quot;, movie.getGenre());</span>
+<span class="fc" id="L168">                moviesData.add(movieData);</span>
+<span class="fc" id="L169">            }</span>
+<span class="fc" id="L170">            playerData.put(&quot;movies&quot;, moviesData);</span>
+            
+<span class="fc" id="L172">            playersData.add(playerData);</span>
+<span class="fc" id="L173">        }</span>
+<span class="fc" id="L174">        data.put(&quot;players&quot;, playersData);</span>
+<span class="fc" id="L175">        data.put(&quot;currentPlayerIndex&quot;, currentPlayerIndex);</span>
+<span class="fc" id="L176">        data.put(&quot;turnCount&quot;, turnCount);</span>
+<span class="fc" id="L177">        data.put(&quot;gameOver&quot;, gameOver);</span>
+        
+        // Add initial movie information
+<span class="fc" id="L180">        Map&lt;String, Object&gt; initialMovieData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L181">        initialMovieData.put(&quot;id&quot;, initialMovie.getId());</span>
+<span class="fc" id="L182">        initialMovieData.put(&quot;title&quot;, initialMovie.getTitle());</span>
+<span class="fc" id="L183">        initialMovieData.put(&quot;releaseYear&quot;, initialMovie.getReleaseYear());</span>
+<span class="fc" id="L184">        initialMovieData.put(&quot;genre&quot;, initialMovie.getGenre());</span>
+<span class="fc" id="L185">        data.put(&quot;initialMovie&quot;, initialMovieData);</span>
+        
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">        if (winner != null) {</span>
+<span class="nc" id="L188">            data.put(&quot;winner&quot;, winner.getName());</span>
+        }
+        
+<span class="fc" id="L191">        sendResponse(exchange, ApiResponse.success(data), 200);</span>
+<span class="fc" id="L192">    }</span>
+    
+    /**
+     * Handle get game status request
+     */
+    private void handleGetGameStatus(HttpExchange exchange) throws IOException {
+<span class="fc" id="L198">        System.out.println(&quot;Handling get game status request&quot;);</span>
+        
+        // Get game status
+<span class="fc" id="L201">        boolean gameOver = gameService.isGameOver();</span>
+<span class="fc" id="L202">        Client winner = gameService.getWinner();</span>
+<span class="fc" id="L203">        int turnCount = gameService.getTurnCount();</span>
+<span class="fc" id="L204">        int currentPlayerIndex = gameService.getCurrentPlayerIndex();</span>
+        
+        // Build response data
+<span class="fc" id="L207">        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L208">        data.put(&quot;gameOver&quot;, gameOver);</span>
+<span class="fc" id="L209">        data.put(&quot;turnCount&quot;, turnCount);</span>
+<span class="fc" id="L210">        data.put(&quot;currentPlayerIndex&quot;, currentPlayerIndex);</span>
+        
+<span class="pc bpc" id="L212" title="1 of 2 branches missed.">        if (winner != null) {</span>
+<span class="nc" id="L213">            data.put(&quot;winner&quot;, winner.getName());</span>
+        }
+        
+        // Add player information
+<span class="fc" id="L217">        List&lt;Map&lt;String, Object&gt;&gt; playersData = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">        for (Client player : gameService.getPlayers()) {</span>
+<span class="fc" id="L219">            Map&lt;String, Object&gt; playerData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L220">            playerData.put(&quot;name&quot;, player.getName());</span>
+<span class="fc" id="L221">            playerData.put(&quot;targetGenre&quot;, player.getTargetGenre());</span>
+<span class="fc" id="L222">            playerData.put(&quot;winThreshold&quot;, player.getWinThreshold());</span>
+<span class="fc" id="L223">            playerData.put(&quot;skipAvailable&quot;, player.isSkipAvailable());</span>
+<span class="fc" id="L224">            playerData.put(&quot;blockAvailable&quot;, player.isBlockAvailable());</span>
+<span class="fc" id="L225">            playerData.put(&quot;isSkipped&quot;, player.isSkipped());</span>
+<span class="fc" id="L226">            playerData.put(&quot;isBlocked&quot;, player.isBlocked());</span>
+            
+            // Add target genre movie count
+<span class="fc" id="L229">            int targetGenreCount = player.getGenreCount().getOrDefault(player.getWinGenre().toLowerCase(), 0);</span>
+<span class="fc" id="L230">            playerData.put(&quot;targetGenreCount&quot;, targetGenreCount);</span>
+            
+            // Add player's movies
+<span class="fc" id="L233">            List&lt;Map&lt;String, Object&gt;&gt; moviesData = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L234" title="All 2 branches covered.">            for (Movie movie : player.getMovies()) {</span>
+<span class="fc" id="L235">                Map&lt;String, Object&gt; movieData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L236">                movieData.put(&quot;id&quot;, movie.getId());</span>
+<span class="fc" id="L237">                movieData.put(&quot;title&quot;, movie.getTitle());</span>
+<span class="fc" id="L238">                movieData.put(&quot;releaseYear&quot;, movie.getReleaseYear());</span>
+<span class="fc" id="L239">                movieData.put(&quot;genre&quot;, movie.getGenre());</span>
+<span class="fc" id="L240">                moviesData.add(movieData);</span>
+<span class="fc" id="L241">            }</span>
+<span class="fc" id="L242">            playerData.put(&quot;movies&quot;, moviesData);</span>
+            
+<span class="fc" id="L244">            playersData.add(playerData);</span>
+<span class="fc" id="L245">        }</span>
+<span class="fc" id="L246">        data.put(&quot;players&quot;, playersData);</span>
+        
+        // Add last movie information from current player's collection
+<span class="fc" id="L249">        Client currentPlayer = gameService.getCurrentPlayer();</span>
+<span class="pc bpc" id="L250" title="2 of 4 branches missed.">        if (currentPlayer != null &amp;&amp; !currentPlayer.getMovies().isEmpty()) {</span>
+<span class="fc" id="L251">            List&lt;Movie&gt; playerMovies = currentPlayer.getMovies();</span>
+<span class="fc" id="L252">            Movie lastMovie = playerMovies.get(playerMovies.size() - 1);</span>
+            
+<span class="fc" id="L254">            Map&lt;String, Object&gt; lastMovieData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L255">            lastMovieData.put(&quot;id&quot;, lastMovie.getId());</span>
+<span class="fc" id="L256">            lastMovieData.put(&quot;title&quot;, lastMovie.getTitle());</span>
+<span class="fc" id="L257">            lastMovieData.put(&quot;releaseYear&quot;, lastMovie.getReleaseYear());</span>
+<span class="fc" id="L258">            lastMovieData.put(&quot;genre&quot;, lastMovie.getGenre());</span>
+<span class="fc" id="L259">            data.put(&quot;lastMovie&quot;, lastMovieData);</span>
+        }
+        
+<span class="fc" id="L262">        sendResponse(exchange, ApiResponse.success(data), 200);</span>
+<span class="fc" id="L263">    }</span>
+    
+    /**
+     * Handle check time request
+     */
+    private void handleCheckTime(HttpExchange exchange) throws IOException {
+<span class="fc" id="L269">        System.out.println(&quot;Handling check time request&quot;);</span>
+        
+        // Check if turn time is up
+<span class="fc" id="L272">        boolean turnTimeOut = gameService.isTurnTimeOut();</span>
+<span class="fc" id="L273">        long remainingTurnTime = gameService.getRemainingTurnTime();</span>
+<span class="fc" id="L274">        boolean gameOver = gameService.isGameOver();</span>
+        
+        // Build response data
+<span class="fc" id="L277">        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L278">        data.put(&quot;turnTimeOut&quot;, turnTimeOut);</span>
+<span class="fc" id="L279">        data.put(&quot;remainingTurnTime&quot;, remainingTurnTime);</span>
+<span class="fc" id="L280">        data.put(&quot;isGameOver&quot;, gameOver);</span>
+        
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">        if (gameOver) {</span>
+<span class="nc" id="L283">            Client winner = gameService.getWinner();</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            if (winner != null) {</span>
+<span class="nc" id="L285">                data.put(&quot;winner&quot;, winner.getName());</span>
+            }
+        }
+        
+<span class="fc" id="L289">        sendResponse(exchange, ApiResponse.success(data), 200);</span>
+<span class="fc" id="L290">    }</span>
+    
+    /**
+     * Handle search movies request
+     */
+    private void handleSearchMovies(HttpExchange exchange, String query) throws IOException {
+<span class="fc" id="L296">        Map&lt;String, String&gt; params = parseQueryParams(query);</span>
+<span class="fc" id="L297">        String term = params.getOrDefault(&quot;term&quot;, &quot;&quot;);</span>
+<span class="fc" id="L298">        int limit = Integer.parseInt(params.getOrDefault(&quot;limit&quot;, &quot;10&quot;));</span>
+<span class="fc" id="L299">        System.out.println(&quot;Searching for term: &quot; + term + &quot;, limit: &quot; + limit);</span>
+<span class="pc bpc" id="L300" title="1 of 2 branches missed.">        if (term.isEmpty()) {</span>
+<span class="nc" id="L301">            sendResponse(exchange, ApiResponse.error(400, &quot;Missing search term&quot;), 400);</span>
+<span class="nc" id="L302">            return;</span>
+        }
+        
+<span class="fc" id="L305">        List&lt;Movie&gt; movies = autocomplete.search(term, limit);</span>
+        
+<span class="fc" id="L307">        List&lt;Map&lt;String, Object&gt;&gt; movieDataList = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">        for (Movie movie : movies) {</span>
+<span class="nc" id="L309">            Map&lt;String, Object&gt; movieData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L310">            movieData.put(&quot;id&quot;, movie.getId());</span>
+<span class="nc" id="L311">            movieData.put(&quot;title&quot;, movie.getTitle());</span>
+<span class="nc" id="L312">            movieData.put(&quot;releaseYear&quot;, movie.getReleaseYear());</span>
+<span class="nc" id="L313">            movieData.put(&quot;genre&quot;, movie.getGenre());</span>
+<span class="nc" id="L314">            movieDataList.add(movieData);</span>
+<span class="nc" id="L315">        }</span>
+        
+<span class="fc" id="L317">        Map&lt;String, Object&gt; responseData = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L318">        responseData.put(&quot;movies&quot;, movieDataList);</span>
+<span class="fc" id="L319">        sendResponse(exchange, ApiResponse.success(responseData), 200);</span>
+<span class="fc" id="L320">    }</span>
+    
+    /**
+     * Handle select movie request
+     */
+    private void handleSelectMovie(HttpExchange exchange, String query) throws IOException {
+        // Parse query parameters
+<span class="nc" id="L327">        Map&lt;String, String&gt; params = parseQueryParams(query);</span>
+<span class="nc" id="L328">        String movieIdStr = params.getOrDefault(&quot;id&quot;, &quot;&quot;);</span>
+        
+<span class="nc bnc" id="L330" title="All 2 branches missed.">        if (movieIdStr.isEmpty()) {</span>
+<span class="nc" id="L331">            sendResponse(exchange, ApiResponse.error(400, &quot;Missing movie ID&quot;), 400);</span>
+<span class="nc" id="L332">            return;</span>
+        }
+        
+        // Check if game is over
+<span class="nc bnc" id="L336" title="All 2 branches missed.">        if (gameService.isGameOver()) {</span>
+<span class="nc" id="L337">            sendResponse(exchange, ApiResponse.error(400, &quot;Game is already over&quot;), 400);</span>
+<span class="nc" id="L338">            return;</span>
+        }
+        
+        // Get current player
+<span class="nc" id="L342">        Client currentPlayer = gameService.getCurrentPlayer();</span>
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        if (currentPlayer == null) {</span>
+<span class="nc" id="L344">            sendResponse(exchange, ApiResponse.error(500, &quot;No current player found&quot;), 500);</span>
+<span class="nc" id="L345">            return;</span>
+        }
+        
+        // Check if player is blocked
+<span class="nc bnc" id="L349" title="All 2 branches missed.">        if (currentPlayer.isBlocked()) {</span>
+            // Clear block status for next turn
+<span class="nc" id="L351">            currentPlayer.clearBlock();</span>
+<span class="nc" id="L352">            sendResponse(exchange, ApiResponse.error(400, &quot;You are blocked for this turn&quot;), 400);</span>
+<span class="nc" id="L353">            return;</span>
+        }
+        
+        // Check if player already selected a movie this turn
+<span class="nc bnc" id="L357" title="All 2 branches missed.">        if (currentPlayer.hasSelectedMovie()) {</span>
+<span class="nc" id="L358">            sendResponse(exchange, ApiResponse.error(400, &quot;You have already selected a movie this turn&quot;), 400);</span>
+<span class="nc" id="L359">            return;</span>
+        }
+        
+        try {
+<span class="nc" id="L363">            int movieId = Integer.parseInt(movieIdStr);</span>
+            
+            // Check if movie has been used before
+<span class="nc bnc" id="L366" title="All 2 branches missed.">            if (currentPlayer.hasUsedMovie(movieId)) {</span>
+<span class="nc" id="L367">                sendResponse(exchange, ApiResponse.error(400, &quot;This movie has already been used&quot;), 400);</span>
+<span class="nc" id="L368">                return;</span>
+            }
+            
+            // Get the movie to check if it exists
+<span class="nc" id="L372">            Movie movie = movieService.getMovieById(movieId);</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">            if (movie == null) {</span>
+<span class="nc" id="L374">                sendResponse(exchange, ApiResponse.error(400, &quot;Movie not found&quot;), 400);</span>
+<span class="nc" id="L375">                return;</span>
+            }
+            
+            // Process the selection
+<span class="nc" id="L379">            boolean success = gameService.processMovieSelection(movieId);</span>
+            
+<span class="nc bnc" id="L381" title="All 2 branches missed.">            if (success) {</span>
+<span class="nc" id="L382">                sendResponse(exchange, ApiResponse.success(null), 200);</span>
+            } else {
+<span class="nc" id="L384">                sendResponse(exchange, ApiResponse.error(400, &quot;Invalid movie selection&quot;), 400);</span>
+            }
+<span class="nc" id="L386">        } catch (NumberFormatException e) {</span>
+<span class="nc" id="L387">            sendResponse(exchange, ApiResponse.error(400, &quot;Invalid movie ID format&quot;), 400);</span>
+<span class="nc" id="L388">        }</span>
+<span class="nc" id="L389">    }</span>
+    
+    /**
+     * Handle skip action request
+     */
+    private void handleSkipAction(HttpExchange exchange) throws IOException {
+        // Check if game is over
+<span class="nc bnc" id="L396" title="All 2 branches missed.">        if (gameService.isGameOver()) {</span>
+<span class="nc" id="L397">            sendResponse(exchange, ApiResponse.error(400, &quot;Game is already over&quot;), 400);</span>
+<span class="nc" id="L398">            return;</span>
+        }
+        
+        // Get current player
+<span class="nc" id="L402">        Client currentPlayer = gameService.getCurrentPlayer();</span>
+<span class="nc bnc" id="L403" title="All 2 branches missed.">        if (currentPlayer == null) {</span>
+<span class="nc" id="L404">            sendResponse(exchange, ApiResponse.error(500, &quot;No current player found&quot;), 500);</span>
+<span class="nc" id="L405">            return;</span>
+        }
+        
+        // Check if player is blocked
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (currentPlayer.isBlocked()) {</span>
+<span class="nc" id="L410">            sendResponse(exchange, ApiResponse.error(400, &quot;You are blocked and cannot use abilities&quot;), 400);</span>
+<span class="nc" id="L411">            return;</span>
+        }
+        
+        // Check if player has skip ability available
+<span class="nc bnc" id="L415" title="All 2 branches missed.">        if (!currentPlayer.isSkipAvailable()) {</span>
+<span class="nc" id="L416">            sendResponse(exchange, ApiResponse.error(400, &quot;Skip ability already used&quot;), 400);</span>
+<span class="nc" id="L417">            return;</span>
+        }
+        
+<span class="nc" id="L420">        boolean success = gameService.useSkipPowerUp();</span>
+        
+<span class="nc bnc" id="L422" title="All 2 branches missed.">        if (success) {</span>
+<span class="nc" id="L423">            sendResponse(exchange, ApiResponse.success(null), 200);</span>
+        } else {
+<span class="nc" id="L425">            sendResponse(exchange, ApiResponse.error(400, &quot;Cannot use skip power-up&quot;), 400);</span>
+        }
+<span class="nc" id="L427">    }</span>
+    
+    /**
+     * Handle block action request
+     */
+    private void handleBlockAction(HttpExchange exchange) throws IOException {
+        // Check if game is over
+<span class="nc bnc" id="L434" title="All 2 branches missed.">        if (gameService.isGameOver()) {</span>
+<span class="nc" id="L435">            sendResponse(exchange, ApiResponse.error(400, &quot;Game is already over&quot;), 400);</span>
+<span class="nc" id="L436">            return;</span>
+        }
+        
+        // Get current player
+<span class="nc" id="L440">        Client currentPlayer = gameService.getCurrentPlayer();</span>
+<span class="nc bnc" id="L441" title="All 2 branches missed.">        if (currentPlayer == null) {</span>
+<span class="nc" id="L442">            sendResponse(exchange, ApiResponse.error(500, &quot;No current player found&quot;), 500);</span>
+<span class="nc" id="L443">            return;</span>
+        }
+        
+        // Check if player is blocked
+<span class="nc bnc" id="L447" title="All 2 branches missed.">        if (currentPlayer.isBlocked()) {</span>
+<span class="nc" id="L448">            sendResponse(exchange, ApiResponse.error(400, &quot;You are blocked and cannot use abilities&quot;), 400);</span>
+<span class="nc" id="L449">            return;</span>
+        }
+        
+        // Check if player has block ability available
+<span class="nc bnc" id="L453" title="All 2 branches missed.">        if (!currentPlayer.isBlockAvailable()) {</span>
+<span class="nc" id="L454">            sendResponse(exchange, ApiResponse.error(400, &quot;Block ability already used&quot;), 400);</span>
+<span class="nc" id="L455">            return;</span>
+        }
+        
+<span class="nc" id="L458">        boolean success = gameService.useBlockPowerUp();</span>
+        
+<span class="nc bnc" id="L460" title="All 2 branches missed.">        if (success) {</span>
+<span class="nc" id="L461">            sendResponse(exchange, ApiResponse.success(null), 200);</span>
+        } else {
+<span class="nc" id="L463">            sendResponse(exchange, ApiResponse.error(400, &quot;Cannot use block power-up&quot;), 400);</span>
+        }
+<span class="nc" id="L465">    }</span>
+    
+    /**
+     * Handle next player request
+     */
+    private void handleNextPlayer(HttpExchange exchange) throws IOException {
+<span class="nc" id="L471">        gameService.nextPlayer();</span>
+        
+        // Get updated game status
+<span class="nc" id="L474">        boolean gameOver = gameService.isGameOver();</span>
+<span class="nc" id="L475">        Client winner = gameService.getWinner();</span>
+<span class="nc" id="L476">        int turnCount = gameService.getTurnCount();</span>
+<span class="nc" id="L477">        int currentPlayerIndex = gameService.getCurrentPlayerIndex();</span>
+        
+        // Build response data
+<span class="nc" id="L480">        Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L481">        data.put(&quot;gameOver&quot;, gameOver);</span>
+<span class="nc" id="L482">        data.put(&quot;turnCount&quot;, turnCount);</span>
+<span class="nc" id="L483">        data.put(&quot;currentPlayerIndex&quot;, currentPlayerIndex);</span>
+        
+<span class="nc bnc" id="L485" title="All 2 branches missed.">        if (winner != null) {</span>
+<span class="nc" id="L486">            data.put(&quot;winner&quot;, winner.getName());</span>
+        }
+        
+        // Add player information
+<span class="nc" id="L490">        List&lt;Map&lt;String, Object&gt;&gt; playersData = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">        for (Client player : gameService.getPlayers()) {</span>
+<span class="nc" id="L492">            Map&lt;String, Object&gt; playerData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L493">            playerData.put(&quot;name&quot;, player.getName());</span>
+<span class="nc" id="L494">            playerData.put(&quot;targetGenre&quot;, player.getTargetGenre());</span>
+<span class="nc" id="L495">            playerData.put(&quot;winThreshold&quot;, player.getWinThreshold());</span>
+<span class="nc" id="L496">            playerData.put(&quot;skipAvailable&quot;, player.isSkipAvailable());</span>
+<span class="nc" id="L497">            playerData.put(&quot;blockAvailable&quot;, player.isBlockAvailable());</span>
+<span class="nc" id="L498">            playerData.put(&quot;isSkipped&quot;, player.isSkipped());</span>
+<span class="nc" id="L499">            playerData.put(&quot;isBlocked&quot;, player.isBlocked());</span>
+            
+<span class="nc" id="L501">            playersData.add(playerData);</span>
+<span class="nc" id="L502">        }</span>
+<span class="nc" id="L503">        data.put(&quot;players&quot;, playersData);</span>
+        
+        // Add last movie information from current player's collection
+<span class="nc" id="L506">        Client currentPlayer = gameService.getCurrentPlayer();</span>
+<span class="nc bnc" id="L507" title="All 4 branches missed.">        if (currentPlayer != null &amp;&amp; !currentPlayer.getMovies().isEmpty()) {</span>
+<span class="nc" id="L508">            List&lt;Movie&gt; playerMovies = currentPlayer.getMovies();</span>
+<span class="nc" id="L509">            Movie lastMovie = playerMovies.get(playerMovies.size() - 1);</span>
+            
+<span class="nc" id="L511">            Map&lt;String, Object&gt; lastMovieData = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L512">            lastMovieData.put(&quot;id&quot;, lastMovie.getId());</span>
+<span class="nc" id="L513">            lastMovieData.put(&quot;title&quot;, lastMovie.getTitle());</span>
+<span class="nc" id="L514">            lastMovieData.put(&quot;releaseYear&quot;, lastMovie.getReleaseYear());</span>
+<span class="nc" id="L515">            lastMovieData.put(&quot;genre&quot;, lastMovie.getGenre());</span>
+<span class="nc" id="L516">            data.put(&quot;lastMovie&quot;, lastMovieData);</span>
+        }
+        
+<span class="nc" id="L519">        sendResponse(exchange, ApiResponse.success(data), 200);</span>
+<span class="nc" id="L520">    }</span>
+    
+    /**
+     * Parse query parameters
+     */
+    private Map&lt;String, String&gt; parseQueryParams(String query) {
+<span class="fc" id="L526">        Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L527" title="All 4 branches covered.">        if (query == null || query.isEmpty()) {</span>
+<span class="fc" id="L528">            return params;</span>
+        }
+        
+<span class="fc bfc" id="L531" title="All 2 branches covered.">        for (String param : query.split(&quot;&amp;&quot;)) {</span>
+<span class="fc" id="L532">            String[] keyValue = param.split(&quot;=&quot;, 2);</span>
+<span class="pc bpc" id="L533" title="1 of 2 branches missed.">            if (keyValue.length == 2) {</span>
+<span class="fc" id="L534">                params.put(keyValue[0], keyValue[1]);</span>
+            }
+        }
+        
+<span class="fc" id="L538">        return params;</span>
+    }
+    
+    /**
+     * Parse request body as JSON
+     */
+    private Map&lt;String, String&gt; parseRequestBody(String body) {
+<span class="fc" id="L545">        Map&lt;String, String&gt; params = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L546" title="All 4 branches covered.">        if (body == null || body.isEmpty()) {</span>
+<span class="fc" id="L547">            return params;</span>
+        }
+        
+        // Simple JSON parsing
+<span class="fc" id="L551">        body = body.trim();</span>
+<span class="pc bpc" id="L552" title="2 of 4 branches missed.">        if (body.startsWith(&quot;{&quot;) &amp;&amp; body.endsWith(&quot;}&quot;)) {</span>
+<span class="fc" id="L553">            body = body.substring(1, body.length() - 1);</span>
+            
+<span class="fc bfc" id="L555" title="All 2 branches covered.">            for (String pair : body.split(&quot;,&quot;)) {</span>
+<span class="fc" id="L556">                String[] keyValue = pair.split(&quot;:&quot;, 2);</span>
+<span class="pc bpc" id="L557" title="1 of 2 branches missed.">                if (keyValue.length == 2) {</span>
+<span class="fc" id="L558">                    String key = keyValue[0].trim();</span>
+<span class="fc" id="L559">                    String value = keyValue[1].trim();</span>
+                    
+                    // Remove quotes
+<span class="pc bpc" id="L562" title="2 of 4 branches missed.">                    if (key.startsWith(&quot;\&quot;&quot;) &amp;&amp; key.endsWith(&quot;\&quot;&quot;)) {</span>
+<span class="fc" id="L563">                        key = key.substring(1, key.length() - 1);</span>
+                    }
+<span class="pc bpc" id="L565" title="1 of 4 branches missed.">                    if (value.startsWith(&quot;\&quot;&quot;) &amp;&amp; value.endsWith(&quot;\&quot;&quot;)) {</span>
+<span class="fc" id="L566">                        value = value.substring(1, value.length() - 1);</span>
+                    }
+                    
+<span class="fc" id="L569">                    params.put(key, value);</span>
+                }
+            }
+        }
+        
+<span class="fc" id="L574">        return params;</span>
+    }
+    
+    /**
+     * Send HTTP response
+     */
+    private void sendResponse(HttpExchange exchange, ApiResponse response, int statusCode) throws IOException {
+<span class="fc" id="L581">        String responseJson = response.toJson();</span>
+<span class="fc" id="L582">        exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json; charset=UTF-8&quot;);</span>
+<span class="fc" id="L583">        exchange.getResponseHeaders().set(&quot;Access-Control-Allow-Origin&quot;, &quot;*&quot;);</span>
+<span class="fc" id="L584">        exchange.sendResponseHeaders(statusCode, responseJson.getBytes(&quot;UTF-8&quot;).length);</span>
+        
+<span class="fc" id="L586">        try (OutputStream os = exchange.getResponseBody()) {</span>
+<span class="fc" id="L587">            os.write(responseJson.getBytes(&quot;UTF-8&quot;));</span>
+<span class="fc" id="L588">            os.flush();</span>
+        }
+<span class="fc" id="L590">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

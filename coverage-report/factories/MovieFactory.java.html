@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovieFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">factories</a> &gt; <span class="el_source">MovieFactory.java</span></div><h1>MovieFactory.java</h1><pre class="source lang-java linenums">package factories;
+
+import models.Movie;
+import models.Tuple;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * 工厂类，负责创建电影对象
+ */
+<span class="nc" id="L13">public class MovieFactory {</span>
+    
+    /**
+     * 创建一个新的电影对象
+     */
+    public static Movie createMovie(String title, int id, int releaseYear, Set&lt;String&gt; genre, 
+                                  List&lt;Tuple&lt;String, Integer&gt;&gt; cast, List&lt;Tuple&lt;String, Integer&gt;&gt; crew) {
+<span class="fc" id="L20">        return new Movie(title, id, releaseYear, genre, cast, crew);</span>
+    }
+    
+    /**
+     * 从数据映射创建电影对象
+     */
+    public static Movie createMovieFromData(Map&lt;String, Object&gt; data) {
+        // 这里可以实现从数据映射（如JSON或数据库结果）创建电影对象的逻辑
+        // 目前是一个简单的实现，实际应用中可以根据需要扩展
+<span class="nc" id="L29">        String title = (String) data.get(&quot;title&quot;);</span>
+<span class="nc" id="L30">        int id = (int) data.get(&quot;id&quot;);</span>
+<span class="nc" id="L31">        int releaseYear = (int) data.get(&quot;releaseYear&quot;);</span>
+        
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L34">        Set&lt;String&gt; genre = (Set&lt;String&gt;) data.get(&quot;genre&quot;);</span>
+        
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L37">        List&lt;Tuple&lt;String, Integer&gt;&gt; cast = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;cast&quot;);</span>
+        
+        @SuppressWarnings(&quot;unchecked&quot;)
+<span class="nc" id="L40">        List&lt;Tuple&lt;String, Integer&gt;&gt; crew = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;crew&quot;);</span>
+        
+<span class="nc" id="L42">        return new Movie(title, id, releaseYear, genre, cast, crew);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

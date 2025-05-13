@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClientFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">factories</a> &gt; <span class="el_source">ClientFactory.java</span></div><h1>ClientFactory.java</h1><pre class="source lang-java linenums">package factories;
+
+import models.Client;
+import services.MovieService;
+import factories.ServiceFactory;
+
+import java.util.Set;
+
+/**
+ * 工厂类，负责创建客户端/玩家对象
+ */
+<span class="nc" id="L12">public class ClientFactory {</span>
+    
+    /**
+     * 创建一个新的客户端/玩家对象
+     * @param name 玩家名称
+     * @param winGenre 玩家目标类型
+     * @param winThreshold 胜利所需的电影数量
+     * @return 新创建的Client对象
+     * @throws IllegalArgumentException 如果目标类型不存在于电影数据库中
+     */
+    public static Client createClient(String name, String winGenre, int winThreshold) {
+        // 验证目标类型是否存在
+<span class="fc" id="L24">        validateGenre(winGenre);</span>
+<span class="fc" id="L25">        return new Client(name, winGenre, winThreshold);</span>
+    }
+    
+    /**
+     * 验证目标类型是否存在于电影数据库中
+     * @param genre 需要验证的目标类型
+     * @throws IllegalArgumentException 如果目标类型不存在于电影数据库中
+     */
+    private static void validateGenre(String genre) {
+<span class="fc" id="L34">        System.out.println(&quot;[DEBUG] 开始验证类型: &quot; + genre);</span>
+        
+<span class="pc bpc" id="L36" title="2 of 4 branches missed.">        if (genre == null || genre.trim().isEmpty()) {</span>
+<span class="nc" id="L37">            System.out.println(&quot;[DEBUG] 类型为空&quot;);</span>
+<span class="nc" id="L38">            throw new IllegalArgumentException(&quot;目标类型不能为空&quot;);</span>
+        }
+        
+        // 获取MovieService实例
+<span class="fc" id="L42">        MovieService movieService = ServiceFactory.getMovieService();</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        System.out.println(&quot;[DEBUG] 获取到MovieService实例: &quot; + (movieService != null ? &quot;成功&quot; : &quot;失败&quot;));</span>
+        
+        // 获取所有可用的电影类型
+<span class="fc" id="L46">        Set&lt;String&gt; availableGenres = movieService.getAllGenres();</span>
+<span class="fc" id="L47">        System.out.println(&quot;[DEBUG] 获取到电影类型数量: &quot; + availableGenres.size());</span>
+<span class="fc" id="L48">        System.out.println(&quot;[DEBUG] 可用类型: &quot; + availableGenres);</span>
+        
+        // 检查目标类型是否存在
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (availableGenres.isEmpty()) {</span>
+<span class="nc" id="L52">            System.out.println(&quot;[DEBUG] 电影数据库为空&quot;);</span>
+<span class="nc" id="L53">            throw new IllegalArgumentException(&quot;电影数据库为空，无法验证目标类型&quot;);</span>
+        }
+        
+        // 将输入的类型转换为小写进行比较
+<span class="fc" id="L57">        String inputGenre = genre.trim();</span>
+<span class="fc" id="L58">        System.out.println(&quot;[DEBUG] 处理后的输入类型: &quot; + inputGenre);</span>
+        
+        // 打印所有可用类型供调试
+<span class="fc" id="L61">        System.out.println(&quot;[DEBUG] 所有可用类型:&quot;);</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (String availableGenre : availableGenres) {</span>
+<span class="fc" id="L63">            System.out.println(&quot;  - &quot; + availableGenre);</span>
+<span class="fc" id="L64">        }</span>
+        
+        // 检查目标类型是否存在于可用类型列表中
+        // 使用严格的完全匹配，而不是部分匹配
+<span class="fc" id="L68">        boolean genreExists = false;</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (String availableGenre : availableGenres) {</span>
+            // 忽略大小写进行完全匹配
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (availableGenre.equalsIgnoreCase(inputGenre)) {</span>
+<span class="fc" id="L72">                genreExists = true;</span>
+<span class="fc" id="L73">                System.out.println(&quot;[DEBUG] 找到完全匹配的类型: &quot; + availableGenre);</span>
+<span class="fc" id="L74">                break;</span>
+            }
+<span class="fc" id="L76">        }</span>
+        
+        // 如果没有找到完全匹配，抛出异常
+<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (!genreExists) {</span>
+<span class="fc" id="L80">            System.out.println(&quot;[DEBUG] 类型不存在于数据库中&quot;);</span>
+<span class="fc" id="L81">            System.out.println(&quot;[DEBUG] 有效的类型包括: &quot; + String.join(&quot;, &quot;, availableGenres));</span>
+<span class="fc" id="L82">            throw new IllegalArgumentException(&quot;目标类型 '&quot; + genre + &quot;' 不存在于电影数据库中。有效的类型包括: &quot; + String.join(&quot;, &quot;, availableGenres));</span>
+        }
+        
+<span class="fc" id="L85">        System.out.println(&quot;[DEBUG] 类型验证成功&quot;);</span>
+<span class="fc" id="L86">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

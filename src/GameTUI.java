@@ -551,7 +551,15 @@ public class GameTUI {
         // 不再在这里显示剩余时间，因为倒计时线程会定期显示
         
         System.out.print("Enter search term: ");
-        String searchTerm = scanner.nextLine();
+        // 使用BufferedReader代替Scanner.nextLine()，避免被其他线程干扰
+        String searchTerm = "";
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+            searchTerm = reader.readLine();
+        } catch (IOException e) {
+            System.out.println("Error reading input: " + e.getMessage());
+            return;
+        }
         
         if (searchTerm.isEmpty()) {
             System.out.println("Search term cannot be empty");

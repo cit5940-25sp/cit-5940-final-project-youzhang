@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">services</a> &gt; <span class="el_source">GameService.java</span></div><h1>GameService.java</h1><pre class="source lang-java linenums">package services;
+
+import models.Client;
+import models.Movie;
+import factories.ServiceFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Service class, handles the overall game logic
+ */
+public class GameService {
+    private final ClientService clientService;
+    private final MovieService movieService;
+    
+    private List&lt;Client&gt; players;
+    private int currentPlayerIndex;
+    private int turnCount;
+    private boolean gameOver;
+    private Client winner;
+    
+    // timing related attributes
+    private long currentTurnStartTime; // current turn start time
+    private static final long TURN_TIME_LIMIT = 30 * 1000; // 30 seconds, unit milliseconds
+    
+    /**
+     * Constructor
+     */
+<span class="fc" id="L34">    public GameService(ClientService clientService, MovieService movieService) {</span>
+<span class="fc" id="L35">        this.clientService = clientService;</span>
+<span class="fc" id="L36">        this.movieService = movieService;</span>
+<span class="fc" id="L37">        this.players = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L38">        this.currentPlayerIndex = 0;</span>
+<span class="fc" id="L39">        this.turnCount = 1;</span>
+<span class="fc" id="L40">        this.gameOver = false;</span>
+<span class="fc" id="L41">    }</span>
+    
+    /**
+     * No-arg constructor, automatically gets dependencies from ServiceFactory
+     */
+    public GameService() {
+<span class="nc" id="L47">        this(ServiceFactory.getClientService(), ServiceFactory.getMovieService());</span>
+<span class="nc" id="L48">    }</span>
+    
+    /**
+     * Initialize game
+     * @param players List of players to initialize the game with
+     * @return The initial movie that was selected, or null if no suitable movie was found
+     */
+    public Movie initGame(List&lt;Client&gt; players) {
+<span class="fc" id="L56">        this.players = new ArrayList&lt;&gt;(players);</span>
+<span class="fc" id="L57">        this.currentPlayerIndex = 0;</span>
+<span class="fc" id="L58">        this.turnCount = 1;</span>
+<span class="fc" id="L59">        this.gameOver = false;</span>
+<span class="fc" id="L60">        this.winner = null;</span>
+        
+        // initialize turn timer
+<span class="fc" id="L63">        this.currentTurnStartTime = System.currentTimeMillis();</span>
+        
+        // Select a random movie as the initial movie that matches all players' win genres
+<span class="fc" id="L66">        Movie initialMovie = selectRandomInitialMovie();</span>
+        
+        // If a suitable initial movie was found, add it to all players' collections
+        // but don't count it towards their genre counts for win condition
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (initialMovie != null) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            for (Client player : players) {</span>
+                // We need to add the movie to the player's collection without counting genres
+                // This requires direct access to the player's movieCollection
+                // Since we can't modify the Client class, we'll use the ClientService
+<span class="fc" id="L75">                clientService.addInitialMovieToClient(player, initialMovie);</span>
+<span class="fc" id="L76">            }</span>
+        }
+        
+<span class="fc" id="L79">        return initialMovie;</span>
+    }
+    
+    /**
+     * Select a random movie as the initial movie that matches ALL player win genres
+     * @return The selected movie, or null if no matching movie found
+     */
+    private Movie selectRandomInitialMovie() {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (players.isEmpty()) {</span>
+<span class="fc" id="L88">            System.out.println(&quot;Warning: No players available for genre matching&quot;);</span>
+<span class="fc" id="L89">            return null;</span>
+        }
+        
+<span class="fc" id="L92">        Map&lt;Integer, Movie&gt; movieCache = movieService.getMovieCache();</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if (movieCache.isEmpty()) {</span>
+<span class="nc" id="L94">            System.out.println(&quot;Warning: No movies available for random selection&quot;);</span>
+<span class="nc" id="L95">            return null;</span>
+        }
+        
+        // Collect all unique win genres from players
+<span class="fc" id="L99">        Set&lt;String&gt; playerGenres = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        for (Client player : players) {</span>
+<span class="fc" id="L101">            playerGenres.add(player.getWinGenre());</span>
+<span class="fc" id="L102">        }</span>
+        
+        // Filter movies that contain ALL players' win genres
+<span class="fc" id="L105">        List&lt;Movie&gt; matchingMovies = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">        for (Movie movie : movieCache.values()) {</span>
+<span class="fc" id="L107">            Set&lt;String&gt; movieGenres = movie.getGenre();</span>
+<span class="pc bpc" id="L108" title="1 of 4 branches missed.">            if (movieGenres != null &amp;&amp; !movieGenres.isEmpty()) {</span>
+<span class="fc" id="L109">                boolean containsAllGenres = true;</span>
+                
+                // Check if movie contains all required genres
+<span class="fc bfc" id="L112" title="All 2 branches covered.">                for (String requiredGenre : playerGenres) {</span>
+<span class="fc" id="L113">                    boolean containsThisGenre = false;</span>
+                    
+<span class="fc bfc" id="L115" title="All 2 branches covered.">                    for (String movieGenre : movieGenres) {</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">                        if (movieGenre.equalsIgnoreCase(requiredGenre)) {</span>
+<span class="fc" id="L117">                            containsThisGenre = true;</span>
+<span class="fc" id="L118">                            break;</span>
+                        }
+<span class="fc" id="L120">                    }</span>
+                    
+<span class="fc bfc" id="L122" title="All 2 branches covered.">                    if (!containsThisGenre) {</span>
+<span class="fc" id="L123">                        containsAllGenres = false;</span>
+<span class="fc" id="L124">                        break;</span>
+                    }
+<span class="fc" id="L126">                }</span>
+                
+<span class="fc bfc" id="L128" title="All 2 branches covered.">                if (containsAllGenres) {</span>
+<span class="fc" id="L129">                    matchingMovies.add(movie);</span>
+                }
+            }
+<span class="fc" id="L132">        }</span>
+        
+        // If no matching movies found, return null
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        if (matchingMovies.isEmpty()) {</span>
+<span class="nc" id="L136">            System.out.println(&quot;Warning: No movies matching ALL player win genres&quot;);</span>
+<span class="nc" id="L137">            return null;</span>
+        }
+        
+        // Select a random movie from matching movies
+<span class="fc" id="L141">        int randomIndex = (int) (Math.random() * matchingMovies.size());</span>
+<span class="fc" id="L142">        Movie randomMovie = matchingMovies.get(randomIndex);</span>
+        
+<span class="fc" id="L144">        System.out.println(&quot;Selected random initial movie: &quot; + randomMovie.getTitle() + </span>
+<span class="fc" id="L145">                           &quot; with genres: &quot; + randomMovie.getGenre());</span>
+        
+<span class="fc" id="L147">        return randomMovie;</span>
+    }
+    
+    /**
+     * Get current player
+     */
+    public Client getCurrentPlayer() {
+<span class="fc bfc" id="L154" title="All 2 branches covered.">        if (players.isEmpty()) {</span>
+<span class="fc" id="L155">            return null;</span>
+        }
+<span class="fc" id="L157">        return players.get(currentPlayerIndex);</span>
+    }
+    
+    /**
+     * Get current player index
+     */
+    public int getCurrentPlayerIndex() {
+<span class="fc" id="L164">        return currentPlayerIndex;</span>
+    }
+    
+    /**
+     * Get next player
+     */
+    public void nextPlayer() {
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">        if (players.isEmpty()) {</span>
+<span class="nc" id="L172">            return;</span>
+        }
+        
+        // Clear current player's selected movie flag
+<span class="fc" id="L176">        Client currentPlayer = getCurrentPlayer();</span>
+<span class="pc bpc" id="L177" title="1 of 2 branches missed.">        if (currentPlayer != null) {</span>
+<span class="fc" id="L178">            currentPlayer.clearSelectedMovie();</span>
+        }
+        
+        // Switch to next player
+<span class="fc" id="L182">        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();</span>
+        
+        // Check current player status
+<span class="fc" id="L185">        Client nextPlayer = getCurrentPlayer();</span>
+        
+        // If player is skipped, clear skip status and switch to next player again
+<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        if (nextPlayer.isSkipped()) {</span>
+<span class="nc" id="L189">            clientService.clearSkip(nextPlayer);</span>
+<span class="nc" id="L190">            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();</span>
+        }
+        // If player is blocked, don't clear block status immediately
+        // This allows the frontend to see the blocked status, and the player will get an error when trying to select a movie
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">        else if (nextPlayer.isBlocked()) {</span>
+<span class="nc" id="L195">            System.out.println(&quot;Player &quot; + nextPlayer.getName() + &quot; is blocked for this turn&quot;);</span>
+            // Don't immediately clear block status, let frontend detect it
+            // Block status will be checked when player tries to select a movie, or cleared next time nextPlayer is called
+        }
+        
+        // If back to first player, increase turn count
+<span class="fc bfc" id="L201" title="All 2 branches covered.">        if (currentPlayerIndex == 0) {</span>
+<span class="fc" id="L202">            turnCount++;</span>
+        }
+        
+        // reset turn timer
+<span class="fc" id="L206">        this.currentTurnStartTime = System.currentTimeMillis();</span>
+<span class="fc" id="L207">    }</span>
+    
+    /**
+     * Process movie selection for the current player
+     * 
+     * @param movieId The ID of the movie to select
+     * @return true if the selection was successful, false if the movie doesn't exist
+     */
+    public boolean processMovieSelection(int movieId) {
+        // Get the movie by ID
+<span class="fc" id="L217">        Movie movie = movieService.getMovieById(movieId);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">        if (movie == null) {</span>
+<span class="nc" id="L219">            return false;</span>
+        }
+        
+<span class="fc" id="L222">        Client currentPlayer = getCurrentPlayer();</span>
+        
+        // Update game state
+<span class="fc" id="L225">        clientService.addMovieToClient(currentPlayer, movie);</span>
+<span class="fc" id="L226">        currentPlayer.selectMovie();</span>
+        
+        // Check win condition
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">        if (clientService.checkWinCondition(currentPlayer)) {</span>
+<span class="nc" id="L230">            gameOver = true;</span>
+<span class="nc" id="L231">            winner = currentPlayer;</span>
+        }
+        
+<span class="fc" id="L234">        return true;</span>
+    }
+    
+    /**
+     * Use skip power-up
+     */
+    public boolean useSkipPowerUp() {
+<span class="fc" id="L241">        Client currentPlayer = getCurrentPlayer();</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">        if (currentPlayer == null) {</span>
+<span class="nc" id="L243">            return false;</span>
+        }
+        
+        // Check if player still has skip ability
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">        if (!currentPlayer.isSkipAvailable()) {</span>
+<span class="nc" id="L248">            return false;</span>
+        }
+        
+        // Get next player index
+<span class="fc" id="L252">        int nextPlayerIndex = (currentPlayerIndex + 1) % players.size();</span>
+<span class="fc" id="L253">        Client nextPlayer = players.get(nextPlayerIndex);</span>
+        
+        // Activate skip status for next player
+<span class="fc" id="L256">        clientService.activateSkip(nextPlayer);</span>
+        
+        // Mark current player as having used skip ability
+<span class="fc" id="L259">        clientService.useSkip(currentPlayer);</span>
+        
+        // no longer automatically switch to next player, frontend will call nextPlayer API
+<span class="fc" id="L262">        return true;</span>
+    }
+    
+    /**
+     * Use block power-up
+     */
+    public boolean useBlockPowerUp() {
+<span class="fc" id="L269">        Client currentPlayer = getCurrentPlayer();</span>
+<span class="pc bpc" id="L270" title="1 of 2 branches missed.">        if (currentPlayer == null) {</span>
+<span class="nc" id="L271">            return false;</span>
+        }
+        
+        // Check if player still has block ability
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">        if (!currentPlayer.isBlockAvailable()) {</span>
+<span class="nc" id="L276">            return false;</span>
+        }
+        
+        // Get next player index
+<span class="fc" id="L280">        int nextPlayerIndex = (currentPlayerIndex + 1) % players.size();</span>
+<span class="fc" id="L281">        Client nextPlayer = players.get(nextPlayerIndex);</span>
+        
+        // Activate block status for next player
+<span class="fc" id="L284">        clientService.activateBlock(nextPlayer);</span>
+        
+        // Mark current player as having used block ability
+<span class="fc" id="L287">        clientService.useBlock(currentPlayer);</span>
+        
+        // no longer automatically switch to next player, frontend will call nextPlayer API
+<span class="fc" id="L290">        return true;</span>
+    }
+    
+    /**
+     * Get game status
+     */
+    public boolean isGameOver() {
+<span class="fc" id="L297">        return gameOver;</span>
+    }
+    
+    /**
+     * Get winner
+     */
+    public Client getWinner() {
+<span class="fc" id="L304">        return winner;</span>
+    }
+    
+    /**
+     * Get current turn count
+     */
+    public int getTurnCount() {
+<span class="fc" id="L311">        return turnCount;</span>
+    }
+    
+    /**
+     * Get all players
+     */
+    public List&lt;Client&gt; getPlayers() {
+<span class="fc" id="L318">        return new ArrayList&lt;&gt;(players);</span>
+    }
+    
+    /**
+     * check if turn time out
+     */
+    public boolean isTurnTimeOut() {
+<span class="fc bfc" id="L325" title="All 2 branches covered.">        return System.currentTimeMillis() - currentTurnStartTime &gt;= TURN_TIME_LIMIT;</span>
+    }
+    
+    /**
+     * get remaining turn time (milliseconds)
+     */
+    public long getRemainingTurnTime() {
+<span class="fc" id="L332">        long elapsed = System.currentTimeMillis() - currentTurnStartTime;</span>
+<span class="fc" id="L333">        long remaining = TURN_TIME_LIMIT - elapsed;</span>
+<span class="fc" id="L334">        return Math.max(0, remaining);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

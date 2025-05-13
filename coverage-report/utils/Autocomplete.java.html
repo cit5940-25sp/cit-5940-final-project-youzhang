@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Autocomplete.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">utils</a> &gt; <span class="el_source">Autocomplete.java</span></div><h1>Autocomplete.java</h1><pre class="source lang-java linenums">package utils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Comparator;
+import models.Movie;
+
+public class Autocomplete {
+    // Trie node class
+    private static class TrieNode {
+        private Map&lt;Character, TrieNode&gt; children;
+        private boolean isEndOfWord;
+        private Movie movie;
+
+<span class="fc" id="L17">        public TrieNode() {</span>
+<span class="fc" id="L18">            children = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L19">            isEndOfWord = false;</span>
+<span class="fc" id="L20">            movie = null;</span>
+<span class="fc" id="L21">        }</span>
+    }
+
+    private TrieNode root;
+
+<span class="fc" id="L26">    public Autocomplete() {</span>
+<span class="fc" id="L27">        root = new TrieNode();</span>
+<span class="fc" id="L28">    }</span>
+
+    // Insert movie into Trie
+    public void insert(Movie movie) {
+<span class="fc" id="L32">        TrieNode current = root;</span>
+<span class="fc" id="L33">        String lowerTitle = movie.getTitle().toLowerCase();</span>
+        
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (int i = 0; i &lt; lowerTitle.length(); i++) {</span>
+<span class="fc" id="L36">            char c = lowerTitle.charAt(i);</span>
+            
+<span class="fc bfc" id="L38" title="All 2 branches covered.">            if (!current.children.containsKey(c)) {</span>
+<span class="fc" id="L39">                current.children.put(c, new TrieNode());</span>
+            }
+<span class="fc" id="L41">            current = current.children.get(c);</span>
+        }
+        
+<span class="fc" id="L44">        current.isEndOfWord = true;</span>
+<span class="fc" id="L45">        current.movie = movie;</span>
+<span class="fc" id="L46">    }</span>
+
+    // Search movies by prefix
+    public List&lt;Movie&gt; search(String prefix) {
+<span class="fc" id="L50">        return search(prefix, 10); // Default return 10 results</span>
+    }
+
+    // Search movies by prefix with limit
+    public List&lt;Movie&gt; search(String prefix, int limit) {
+<span class="fc" id="L55">        List&lt;Movie&gt; results = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L56">        TrieNode current = root;</span>
+<span class="fc" id="L57">        String lowerPrefix = prefix.toLowerCase();</span>
+
+        // Find the last node of the prefix
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int i = 0; i &lt; lowerPrefix.length(); i++) {</span>
+<span class="fc" id="L61">            char c = lowerPrefix.charAt(i);</span>
+            
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            if (!current.children.containsKey(c)) {</span>
+<span class="fc" id="L64">                return results; // Return empty list if prefix not found</span>
+            }
+<span class="fc" id="L66">            current = current.children.get(c);</span>
+        }
+
+        // Collect all possible movies from this node
+<span class="fc" id="L70">        collectMovies(current, results);</span>
+
+        // Sort by match quality and limit results
+<span class="fc" id="L73">        results.sort(new MovieComparator(prefix));</span>
+<span class="fc" id="L74">        return results.subList(0, Math.min(limit, results.size()));</span>
+    }
+
+    // Recursively collect all possible movies
+    private void collectMovies(TrieNode node, List&lt;Movie&gt; results) {
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">        if (node == null) {</span>
+<span class="nc" id="L80">            return;</span>
+        }
+
+<span class="pc bpc" id="L83" title="1 of 4 branches missed.">        if (node.isEndOfWord &amp;&amp; node.movie != null) {</span>
+<span class="fc" id="L84">            results.add(node.movie);</span>
+        }
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (TrieNode child : node.children.values()) {</span>
+<span class="fc" id="L88">            collectMovies(child, results);</span>
+<span class="fc" id="L89">        }</span>
+<span class="fc" id="L90">    }</span>
+
+    // Movie comparator for sorting by match quality
+    private static class MovieComparator implements Comparator&lt;Movie&gt; {
+        private final String prefix;
+
+<span class="fc" id="L96">        public MovieComparator(String prefix) {</span>
+<span class="fc" id="L97">            this.prefix = prefix.toLowerCase();</span>
+<span class="fc" id="L98">        }</span>
+
+        @Override
+        public int compare(Movie m1, Movie m2) {
+<span class="fc" id="L102">            String title1 = m1.getTitle().toLowerCase();</span>
+<span class="fc" id="L103">            String title2 = m2.getTitle().toLowerCase();</span>
+
+            // If prefix matches exactly, prioritize
+<span class="pc bpc" id="L106" title="2 of 4 branches missed.">            if (title1.startsWith(prefix) &amp;&amp; !title2.startsWith(prefix)) {</span>
+<span class="nc" id="L107">                return -1;</span>
+            }
+<span class="pc bpc" id="L109" title="3 of 4 branches missed.">            if (!title1.startsWith(prefix) &amp;&amp; title2.startsWith(prefix)) {</span>
+<span class="nc" id="L110">                return 1;</span>
+            }
+
+            // If both match or neither matches, sort by title length
+            // Shorter titles are usually more relevant
+<span class="fc" id="L115">            return Integer.compare(title1.length(), title2.length());</span>
+        }
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

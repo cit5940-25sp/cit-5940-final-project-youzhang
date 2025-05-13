@@ -55,7 +55,7 @@ public class Autocomplete {
 
     // 根据前缀搜索匹配的电影
     public List<Movie> search(String prefix) {
-        return search(prefix, 10); // 默认返回10个结果
+        return search(prefix, 20); // 默认返回20个结果
     }
 
     // 根据前缀搜索匹配的电影，限制返回数量
@@ -70,8 +70,8 @@ public class Autocomplete {
         System.out.println("Searching with prefix: '" + prefix + "', limit: " + limit + " (total movies in trie: " + totalMovies + ")");
         
         TrieNode current = root;
-        String lowerPrefix = prefix.toLowerCase().trim();
-
+        String lowerPrefix = prefix.toLowerCase().trim().replace(" ", "");
+        
         // Handle empty prefix - return first N movies
         if (lowerPrefix.isEmpty()) {
             System.out.println("Empty prefix - collecting all movies up to limit");

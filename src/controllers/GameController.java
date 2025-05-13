@@ -296,7 +296,7 @@ public class GameController implements HttpHandler {
         Map<String, String> params = parseQueryParams(query);
         String term = params.getOrDefault("term", "");
         int limit = Integer.parseInt(params.getOrDefault("limit", "10"));
-        
+        System.out.println("Searching for term: " + term + ", limit: " + limit);
         if (term.isEmpty()) {
             sendResponse(exchange, ApiResponse.error(400, "Missing search term"), 400);
             return;

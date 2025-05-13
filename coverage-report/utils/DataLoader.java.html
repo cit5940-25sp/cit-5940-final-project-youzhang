@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JaCoCo Coverage Report</a> &gt; <a href="index.source.html" class="el_package">utils</a> &gt; <span class="el_source">DataLoader.java</span></div><h1>DataLoader.java</h1><pre class="source lang-java linenums">package utils;
+
+import models.Movie;
+import services.MovieService;
+import factories.ServiceFactory;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+
+/**
+ * 数据加载工具类，用于从CSV文件中加载电影数据
+ */
+public class DataLoader {
+    private MovieService movieService;
+    
+    /**
+     * 构造函数
+     */
+<span class="fc" id="L19">    public DataLoader(MovieService movieService) {</span>
+<span class="fc" id="L20">        this.movieService = movieService;</span>
+<span class="fc" id="L21">    }</span>
+    
+    /**
+     * 无参构造函数，自动从ServiceFactory获取MovieService实例
+     */
+<span class="fc" id="L26">    public DataLoader() {</span>
+<span class="fc" id="L27">        this.movieService = ServiceFactory.getMovieService();</span>
+<span class="fc" id="L28">    }</span>
+    
+    /**
+     * 从CSV文件加载电影数据
+     */
+    public void loadMoviesFromCsv(String filePath) throws IOException {
+<span class="fc" id="L34">        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {</span>
+            // 跳过标题行
+<span class="fc" id="L36">            String line = reader.readLine();</span>
+<span class="fc" id="L37">            int lineCount = 1;</span>
+<span class="fc" id="L38">            int successCount = 0;</span>
+<span class="fc" id="L39">            int skipCount = 0;</span>
+            
+            // 读取数据行
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L43">                lineCount++;</span>
+                try {
+<span class="fc" id="L45">                    Movie movie = MovieCsvParser.parseMovieLine(line);</span>
+<span class="fc" id="L46">                    movieService.addMovie(movie);</span>
+<span class="fc" id="L47">                    successCount++;</span>
+<span class="fc" id="L48">                } catch (MovieCsvParser.MovieParseException e) {</span>
+                    // 只记录错误，不中断处理
+<span class="fc" id="L50">                    System.err.println(&quot;跳过第&quot; + lineCount + &quot;行: &quot; + e.getMessage());</span>
+<span class="fc" id="L51">                    skipCount++;</span>
+<span class="fc" id="L52">                }</span>
+            }
+            
+<span class="fc" id="L55">            System.out.println(&quot;电影数据加载完成: 总行数=&quot; + (lineCount-1) + &quot;, 成功=&quot; + successCount + &quot;, 跳过=&quot; + skipCount);</span>
+        }
+<span class="fc" id="L57">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
