@@ -8,37 +8,37 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * 数据加载工具类，用于从CSV文件中加载电影数据
+ * DataLoader class, responsible for loading movie data from CSV file
  */
 public class DataLoader {
     private MovieService movieService;
     
     /**
-     * 构造函数
+     * constructor
      */
 <span class="fc" id="L19">    public DataLoader(MovieService movieService) {</span>
 <span class="fc" id="L20">        this.movieService = movieService;</span>
 <span class="fc" id="L21">    }</span>
     
     /**
-     * 无参构造函数，自动从ServiceFactory获取MovieService实例
+     * constructor, automatically gets MovieService instance from ServiceFactory
      */
 <span class="fc" id="L26">    public DataLoader() {</span>
 <span class="fc" id="L27">        this.movieService = ServiceFactory.getMovieService();</span>
 <span class="fc" id="L28">    }</span>
     
     /**
-     * 从CSV文件加载电影数据
+     * load movie data from CSV file
      */
     public void loadMoviesFromCsv(String filePath) throws IOException {
 <span class="fc" id="L34">        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {</span>
-            // 跳过标题行
+            // skip header line
 <span class="fc" id="L36">            String line = reader.readLine();</span>
 <span class="fc" id="L37">            int lineCount = 1;</span>
 <span class="fc" id="L38">            int successCount = 0;</span>
 <span class="fc" id="L39">            int skipCount = 0;</span>
             
-            // 读取数据行
+            // read data lines
 <span class="fc bfc" id="L42" title="All 2 branches covered.">            while ((line = reader.readLine()) != null) {</span>
 <span class="fc" id="L43">                lineCount++;</span>
                 try {
@@ -46,13 +46,13 @@ public class DataLoader {
 <span class="fc" id="L46">                    movieService.addMovie(movie);</span>
 <span class="fc" id="L47">                    successCount++;</span>
 <span class="fc" id="L48">                } catch (MovieCsvParser.MovieParseException e) {</span>
-                    // 只记录错误，不中断处理
-<span class="fc" id="L50">                    System.err.println(&quot;跳过第&quot; + lineCount + &quot;行: &quot; + e.getMessage());</span>
+                    // only record error, continue processing
+<span class="fc" id="L50">                    System.err.println(&quot;skip line &quot; + lineCount + &quot;: &quot; + e.getMessage());</span>
 <span class="fc" id="L51">                    skipCount++;</span>
 <span class="fc" id="L52">                }</span>
             }
             
-<span class="fc" id="L55">            System.out.println(&quot;电影数据加载完成: 总行数=&quot; + (lineCount-1) + &quot;, 成功=&quot; + successCount + &quot;, 跳过=&quot; + skipCount);</span>
+<span class="fc" id="L55">            System.out.println(&quot;movie data loaded: total lines=&quot; + (lineCount-1) + &quot;, success=&quot; + successCount + &quot;, skipped=&quot; + skipCount);</span>
         }
 <span class="fc" id="L57">    }</span>
 }

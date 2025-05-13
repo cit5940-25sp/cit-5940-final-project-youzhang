@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 工厂类，负责创建电影对象
+ * factory class, responsible for creating movie objects
  */
 <span class="nc" id="L13">public class MovieFactory {</span>
     
     /**
-     * 创建一个新的电影对象
+     * create a new movie object
      */
     public static Movie createMovie(String title, int id, int releaseYear, Set&lt;String&gt; genre, 
                                   List&lt;Tuple&lt;String, Integer&gt;&gt; cast, List&lt;Tuple&lt;String, Integer&gt;&gt; crew) {
@@ -21,25 +21,24 @@ import java.util.Set;
     }
     
     /**
-     * 从数据映射创建电影对象
+     * create a movie object from data map
      */
     public static Movie createMovieFromData(Map&lt;String, Object&gt; data) {
-        // 这里可以实现从数据映射（如JSON或数据库结果）创建电影对象的逻辑
-        // 目前是一个简单的实现，实际应用中可以根据需要扩展
-<span class="nc" id="L29">        String title = (String) data.get(&quot;title&quot;);</span>
-<span class="nc" id="L30">        int id = (int) data.get(&quot;id&quot;);</span>
-<span class="nc" id="L31">        int releaseYear = (int) data.get(&quot;releaseYear&quot;);</span>
+        // implement the logic to create a movie object from data map
+<span class="nc" id="L28">        String title = (String) data.get(&quot;title&quot;);</span>
+<span class="nc" id="L29">        int id = (int) data.get(&quot;id&quot;);</span>
+<span class="nc" id="L30">        int releaseYear = (int) data.get(&quot;releaseYear&quot;);</span>
         
         @SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L34">        Set&lt;String&gt; genre = (Set&lt;String&gt;) data.get(&quot;genre&quot;);</span>
+<span class="nc" id="L33">        Set&lt;String&gt; genre = (Set&lt;String&gt;) data.get(&quot;genre&quot;);</span>
         
         @SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L37">        List&lt;Tuple&lt;String, Integer&gt;&gt; cast = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;cast&quot;);</span>
+<span class="nc" id="L36">        List&lt;Tuple&lt;String, Integer&gt;&gt; cast = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;cast&quot;);</span>
         
         @SuppressWarnings(&quot;unchecked&quot;)
-<span class="nc" id="L40">        List&lt;Tuple&lt;String, Integer&gt;&gt; crew = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;crew&quot;);</span>
+<span class="nc" id="L39">        List&lt;Tuple&lt;String, Integer&gt;&gt; crew = (List&lt;Tuple&lt;String, Integer&gt;&gt;) data.get(&quot;crew&quot;);</span>
         
-<span class="nc" id="L42">        return new Movie(title, id, releaseYear, genre, cast, crew);</span>
+<span class="nc" id="L41">        return new Movie(title, id, releaseYear, genre, cast, crew);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

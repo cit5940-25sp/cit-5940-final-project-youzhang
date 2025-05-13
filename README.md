@@ -1,15 +1,121 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/nK589Lr0)
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=18841678&assignment_repo_type=AssignmentRepo)
-# Movie Chain Game
+# Movie Connection Game
 
-A terminal-based game where players take turns selecting movies that are connected to each other. The game features movie search functionality and power-ups like skip and block.
+A Java-based multiplayer game where players compete to select movies matching their target genre. The game features a web-based UI, a text-based UI (TUI), special abilities, and a timer system to create an engaging and competitive experience.
 
-> **Note:** This is currently a demo version with basic functionality. A more comprehensive TUI (Text User Interface) is planned for future development.
+## Features
 
-## Prerequisites
+- **Two User Interfaces**: Web-based UI and Text-based UI (TUI)
+- **Movie Database**: Over 4,800 movies with detailed information
+- **Special Abilities**: Skip opponent's turn or block their move
+- **Timer System**: 30-second time limit for each player's turn
+- **Target Genre System**: Each player has a target genre to collect
+- **Autocomplete Search**: Fast movie search with autocomplete functionality
+- **Comprehensive Testing**: Over 70 unit tests with code coverage reports
+
+## Project Architecture
+
+The project follows a client-service architecture:
+
+- **Models**: Core data structures (Movie, Client, etc.)
+- **Services**: Business logic layer (GameService, MovieService, ClientService)
+- **Controllers**: API endpoints and game flow control
+- **Factories**: Object creation (MovieFactory, ClientFactory)
+- **Utils**: Helper classes for data loading and processing
+
+## Getting Started
+
+### Prerequisites
 
 - Java 8 or higher
-- JSON Simple library (included in the lib directory)
+- Web browser (for web UI)
+
+### Installation
+
+1. Clone the repository
+2. Run the dependency download script:
+   ```
+   ./download_deps.sh
+   ```
+3. Compile the project:
+   ```
+   ./compile.sh
+   ```
+
+## Running the Game
+
+### Web Interface
+
+Start the game server:
+```
+./run_server.sh
+```
+
+Then open your browser and navigate to:
+```
+http://localhost:8080
+```
+
+### Text User Interface (TUI)
+
+Run the TUI version of the game:
+```
+./run_tui.sh
+```
+
+## Game Rules
+
+1. Each player selects a target genre and a win threshold (number of movies needed to win)
+2. Players take turns selecting movies
+3. The game randomly selects an initial movie
+4. Each player has 30 seconds to select a movie on their turn
+5. Movies must be connected to the previously selected movie
+6. Each player can use one skip and one block ability during the game
+7. The first player to reach their win threshold (collect enough movies of their target genre) wins
+8. If a player fails to select a movie within 30 seconds, they lose
+
+## Testing
+
+The project includes several test scripts:
+
+- Run all tests:
+  ```
+  ./run_all_tests.sh
+  ```
+
+- Run model tests only:
+  ```
+  ./run_models_test.sh
+  ```
+
+- Run utility tests only:
+  ```
+  ./run_utils_test.sh
+  ```
+
+After running tests, view the coverage report by opening:
+```
+coverage-report/index.html
+```
+
+## Project Structure
+
+- `src/` - Source code
+  - `models/` - Data models
+  - `services/` - Business logic
+  - `controllers/` - API endpoints
+  - `factories/` - Object creation
+  - `utils/` - Helper utilities
+- `test/` - Test cases
+- `web/` - Web interface files
+- `lib/` - External libraries
+- `bin/` - Compiled classes
+
+## Development Notes
+
+- The project uses a custom CSV parser to handle the movie dataset
+- The web interface communicates with the Java backend via HTTP
+- The TUI provides a complete game experience in the terminal
+- All Chinese comments have been translated to English
 
 ## Project Structure
 

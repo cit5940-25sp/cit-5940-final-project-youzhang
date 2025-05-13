@@ -10,40 +10,40 @@ import java.nio.file.Files;
 import java.net.InetSocketAddress;
 
 /**
- * 游戏服务器，负责启动HTTP服务器和注册控制器
+ * Game server, responsible for starting the HTTP server and registering controllers
  */
 public class GameServer {
     private final int port;
     private HttpServer server;
     
     /**
-     * 构造函数
+     * Constructor
      */
 <span class="nc" id="L22">    public GameServer(int port) {</span>
 <span class="nc" id="L23">        this.port = port;</span>
 <span class="nc" id="L24">    }</span>
     
     /**
-     * 初始化服务器
+     * Initialize the server
      */
     public void initialize() throws IOException {
-        // 创建HTTP服务器
+        // Create HTTP server
 <span class="nc" id="L31">        server = HttpServer.create(new InetSocketAddress(port), 0);</span>
         
-        // 加载电影数据
+        // Load movie data
         try {
 <span class="nc" id="L35">            DataLoader dataLoader = new DataLoader();</span>
 <span class="nc" id="L36">            String projectPath = System.getProperty(&quot;user.dir&quot;);</span>
-            // 如果当前目录是bin，则需要回到上一级目录
+            // If current directory is bin, go back to parent directory
 <span class="nc bnc" id="L38" title="All 2 branches missed.">            if (projectPath.endsWith(&quot;/bin&quot;)) {</span>
 <span class="nc" id="L39">                projectPath = projectPath.substring(0, projectPath.length() - 4);</span>
             }
 <span class="nc" id="L41">            dataLoader.loadMoviesFromCsv(projectPath + &quot;/src/movies.csv&quot;);</span>
 <span class="nc" id="L42">        } catch (IOException e) {</span>
-<span class="nc" id="L43">            System.err.println(&quot;加载电影数据时发生错误: &quot; + e.getMessage());</span>
+<span class="nc" id="L43">            System.err.println(&quot;Error loading movie data: &quot; + e.getMessage());</span>
 <span class="nc" id="L44">        }</span>
         
-        // 注册控制器
+        // Register controller
 <span class="nc" id="L47">        GameController gameController = new GameController();</span>
 <span class="nc" id="L48">        server.createContext(&quot;/api&quot;, gameController);</span>
         
@@ -84,35 +84,35 @@ public class GameServer {
             }
 <span class="nc" id="L85">        });</span>
         
-        // 设置线程池
-<span class="nc" id="L88">        server.setExecutor(null); // 使用默认执行器</span>
+        // Set thread pool
+<span class="nc" id="L88">        server.setExecutor(null); // Use default executor</span>
 <span class="nc" id="L89">    }</span>
     
     /**
-     * 启动服务器
+     * Start the server
      */
     public void start() {
 <span class="nc bnc" id="L95" title="All 2 branches missed.">        if (server != null) {</span>
 <span class="nc" id="L96">            server.start();</span>
-<span class="nc" id="L97">            System.out.println(&quot;游戏服务器已启动，监听端口: &quot; + port);</span>
+<span class="nc" id="L97">            System.out.println(&quot;Game server started, listening on port: &quot; + port);</span>
 <span class="nc" id="L98">            System.out.println(&quot;Open http://localhost:&quot; + port + &quot; to play the game&quot;);</span>
         } else {
-<span class="nc" id="L100">            System.err.println(&quot;服务器未初始化，请先调用initialize()方法&quot;);</span>
+<span class="nc" id="L100">            System.err.println(&quot;Server not initialized, please call initialize() method first&quot;);</span>
         }
 <span class="nc" id="L102">    }</span>
     
     /**
-     * 停止服务器
+     * Stop the server
      */
     public void stop() {
 <span class="nc bnc" id="L108" title="All 2 branches missed.">        if (server != null) {</span>
 <span class="nc" id="L109">            server.stop(0);</span>
-<span class="nc" id="L110">            System.out.println(&quot;游戏服务器已停止&quot;);</span>
+<span class="nc" id="L110">            System.out.println(&quot;Game server stopped&quot;);</span>
         }
 <span class="nc" id="L112">    }</span>
     
     /**
-     * 主方法，用于启动服务器
+     * Main method for starting the server
      */
     public static void main(String[] args) {
         try {
@@ -121,7 +121,7 @@ public class GameServer {
                 try {
 <span class="nc" id="L122">                    port = Integer.parseInt(args[0]);</span>
 <span class="nc" id="L123">                } catch (NumberFormatException e) {</span>
-<span class="nc" id="L124">                    System.err.println(&quot;无效的端口号，使用默认端口8080&quot;);</span>
+<span class="nc" id="L124">                    System.err.println(&quot;Invalid port number, using default port 8080&quot;);</span>
 <span class="nc" id="L125">                }</span>
             }
             
@@ -129,11 +129,11 @@ public class GameServer {
 <span class="nc" id="L129">            gameServer.initialize();</span>
 <span class="nc" id="L130">            gameServer.start();</span>
             
-            // 添加关闭钩子，确保服务器在JVM关闭时正常停止
+            // Add shutdown hook to ensure server stops properly when JVM shuts down
 <span class="nc" id="L133">            Runtime.getRuntime().addShutdownHook(new Thread(gameServer::stop));</span>
             
 <span class="nc" id="L135">        } catch (IOException e) {</span>
-<span class="nc" id="L136">            System.err.println(&quot;启动服务器时发生错误: &quot; + e.getMessage());</span>
+<span class="nc" id="L136">            System.err.println(&quot;Error starting server: &quot; + e.getMessage());</span>
 <span class="nc" id="L137">            e.printStackTrace();</span>
 <span class="nc" id="L138">        }</span>
 <span class="nc" id="L139">    }</span>

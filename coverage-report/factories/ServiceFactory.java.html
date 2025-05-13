@@ -5,7 +5,7 @@ import services.GameService;
 import services.MovieService;
 
 /**
- * 工厂类，负责创建和管理服务实例
+ * factory class, responsible for creating and managing service instances
  */
 <span class="nc" id="L10">public class ServiceFactory {</span>
     private static ClientService clientService;
@@ -13,7 +13,7 @@ import services.MovieService;
     private static GameService gameService;
     
     /**
-     * 获取ClientService实例
+     * get ClientService instance
      */
     public static ClientService getClientService() {
 <span class="fc bfc" id="L19" title="All 2 branches covered.">        if (clientService == null) {</span>
@@ -23,7 +23,7 @@ import services.MovieService;
     }
     
     /**
-     * 获取MovieService实例
+     * get MovieService instance
      */
     public static MovieService getMovieService() {
 <span class="fc bfc" id="L29" title="All 2 branches covered.">        if (movieService == null) {</span>
@@ -33,7 +33,7 @@ import services.MovieService;
     }
     
     /**
-     * 获取GameService实例
+     * get GameService instance
      */
     public static GameService getGameService() {
 <span class="fc bfc" id="L39" title="All 2 branches covered.">        if (gameService == null) {</span>
