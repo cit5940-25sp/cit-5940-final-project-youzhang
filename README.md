@@ -12,6 +12,13 @@ A Java-based multiplayer game where players compete to select movies matching th
 - **Autocomplete Search**: Fast movie search with autocomplete functionality
 - **Comprehensive Testing**: Over 70 unit tests with code coverage reports
 
+## Optional Features for Homework
+- We add a GUI under the branch "final-version" which looks like:
+  ![GUI Format](./image/GUI-format.jpg)
+- We add a simple python program based on BFS to create a CSV cheatsheet if non-players want to play the game but they don't want to think about a solution.
+   - the generated CSV solution looks like:
+   ![CheatSheet](./image/CheatSheet.jpg)
+
 ## Project Architecture
 
 The project follows a client-service architecture:
