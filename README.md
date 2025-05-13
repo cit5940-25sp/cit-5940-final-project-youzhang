@@ -159,32 +159,28 @@ javac -cp .:lib/json-simple-1.1.1.jar src/GameTUI.java -d bin
 ### Start the Game Server
 
 ```bash
-java -cp bin GameServer
+./run_server.sh
 ```
 
 ### Start the TUI Client
 
 ```bash
-java -cp bin:lib/json-simple-1.1.1.jar GameTUI
+./run_tui.sh
 ```
 
 ## Running Tests
 
 The project includes comprehensive unit tests for various components. To run the tests:
 
-1. Compile the test files:
+
+1. Run all tests:
 ```bash
-javac -cp ".:lib/*:src:test" test/utils/*.java
+./run_all_tests.sh
 ```
 
-2. Run all tests:
+2. To run a specific test class:
 ```bash
-java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieIndexerTest utils.AutocompleteTest utils.MovieCsvParserTest utils.DataLoaderTest
-```
-
-3. To run a specific test class:
-```bash
-java -cp ".:lib/*:src:test" org.junit.runner.JUnitCore utils.MovieCsvParserTest
+./run_models_test.sh
 ```
 
 The test suite includes tests for:
