@@ -117,6 +117,17 @@ coverage-report/index.html
 - The TUI provides a complete game experience in the terminal
 - All Chinese comments have been translated to English
 
+## Bonus Features
+
+- **Web-based GUI**: A complete graphical user interface is available in the `final-version` branch
+- **Multithreading**: Implemented countdown timer using separate threads to avoid blocking the main game flow
+- **Frontend-Backend Separation**: Used Java's HttpServer to create a RESTful API, enabling clear separation between frontend and backend
+- **Special Abilities System**: Players can use strategic abilities (skip and block) to gain advantages
+- **Factory Pattern**: Implemented factory classes for object creation, following good OOP principles
+- **Service Layer Architecture**: Clear separation of concerns with models, services, and controllers
+- **Comprehensive Testing**: Over 70 unit tests with JaCoCo code coverage reports
+- **Code Simplification**: Applied code simplification principles throughout the project
+
 ## Project Structure
 
 ```
